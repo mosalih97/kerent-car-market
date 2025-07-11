@@ -1,11 +1,14 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Tables, TablesInsert } from '@/integrations/supabase/types';
-import { toast } from 'sonner';
+import { useAuth } from './useAuth';
+import { Database } from '@/integrations/supabase/types';
 
-export type Ad = Tables<'ads'>;
-export type AdInsert = TablesInsert<'ads'>;
+type Ad = Database['public']['Tables']['ads']['Row'] & {
+  profiles: Database['public']['Tables']['profiles']['Row'];
+};
+
+type AdInsert = Database['public']['Tables']['ads']['Insert'];
 
 export const useAds = () => {
   return useQuery({
@@ -15,111 +18,104 @@ export const useAds = () => {
         .from('ads')
         .select(`
           *,
-          profiles:user_id (
-            full_name,
-            is_premium,
-            is_featured
-          )
+          profiles!inner(*)
         `)
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching ads:', error);
-        throw error;
-      }
+      if (error) throw error;
+      return data as Ad[];
+    },
+  });
+};
 
+export const useMyAds = () => {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: ['myAds', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      
+      const { data, error } = await supabase
+        .from('ads')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
       return data;
-    }
+    },
+    enabled: !!user,
   });
 };
 
 export const useCreateAd = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (adData: Omit<AdInsert, 'user_id'>) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        throw new Error('يجب تسجيل الدخول أولاً');
-      }
+    mutationFn: async (adData: {
+      title: string;
+      description: string;
+      price: number;
+      brand: string;
+      model: string;
+      year: number;
+      mileage?: number;
+      condition: 'new' | 'used' | 'excellent' | 'good' | 'fair';
+      city: string;
+      phone: string;
+      images?: string[];
+    }) => {
+      if (!user) throw new Error('يجب تسجيل الدخول لإنشاء إعلان');
+
+      const adInsert: AdInsert = {
+        user_id: user.id,
+        title: adData.title,
+        description: adData.description,
+        price: adData.price,
+        brand: adData.brand,
+        model: adData.model,
+        year: adData.year,
+        mileage: adData.mileage,
+        condition: adData.condition as Database['public']['Enums']['car_condition'],
+        city: adData.city,
+        phone: adData.phone,
+        images: adData.images || [],
+      };
 
       const { data, error } = await supabase
         .from('ads')
-        .insert([{ ...adData, user_id: user.id }])
+        .insert(adInsert)
         .select()
         .single();
 
-      if (error) {
-        console.error('Error creating ad:', error);
-        throw error;
-      }
-
+      if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ads'] });
-      toast.success('تم إنشاء الإعلان بنجاح');
+      queryClient.invalidateQueries({ queryKey: ['myAds'] });
     },
-    onError: (error: any) => {
-      console.error('Create ad error:', error);
-      toast.error(error.message || 'حدث خطأ في إنشاء الإعلان');
-    }
   });
 };
 
-export const useSearchAds = (filters: {
-  city?: string;
-  brand?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  condition?: string;
-}) => {
-  return useQuery({
-    queryKey: ['ads', 'search', filters],
-    queryFn: async () => {
-      let query = supabase
+export const useDeleteAd = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (adId: string) => {
+      const { error } = await supabase
         .from('ads')
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            is_premium,
-            is_featured
-          )
-        `)
-        .eq('is_active', true);
+        .delete()
+        .eq('id', adId);
 
-      if (filters.city) {
-        query = query.eq('city', filters.city);
-      }
-
-      if (filters.brand) {
-        query = query.eq('brand', filters.brand);
-      }
-
-      if (filters.minPrice) {
-        query = query.gte('price', filters.minPrice);
-      }
-
-      if (filters.maxPrice) {
-        query = query.lte('price', filters.maxPrice);
-      }
-
-      if (filters.condition) {
-        query = query.eq('condition', filters.condition);
-      }
-
-      const { data, error } = await query.order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error searching ads:', error);
-        throw error;
-      }
-
-      return data;
+      if (error) throw error;
     },
-    enabled: Object.values(filters).some(value => value !== undefined && value !== '')
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ads'] });
+      queryClient.invalidateQueries({ queryKey: ['myAds'] });
+    },
   });
 };

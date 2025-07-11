@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, MapPin, Car, DollarSign, Filter, Star, Eye, Phone, MessageCircle, Plus, LogOut } from "lucide-react";
+import { Search, MapPin, Car, DollarSign, Filter, Star, Eye, Phone, MessageCircle, Plus, Bell, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,7 +12,7 @@ import CreateAdModal from "@/components/CreateAdModal";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { data: ads, isLoading } = useAds();
   const [showCreateModal, setShowCreateModal] = useState(false);
   
@@ -26,11 +26,11 @@ const Index = () => {
   });
 
   const handleAuthClick = () => {
-    if (user) {
-      signOut();
-    } else {
-      navigate('/auth');
-    }
+    navigate('/auth');
+  };
+
+  const handleDashboardClick = () => {
+    navigate('/dashboard');
   };
 
   const formatPrice = (price: number) => {
@@ -68,21 +68,15 @@ const Index = () => {
               <nav className="hidden md:flex items-center gap-6">
                 <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">الرئيسية</a>
                 <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">البحث</a>
-                {user && (
-                  <button 
-                    onClick={() => setShowCreateModal(true)}
-                    className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
-                  >
-                    إضافة إعلان
-                  </button>
-                )}
                 <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">عنا</a>
               </nav>
             </div>
-            <div className="flex items-center gap-4">
-              {user && (
+            <div className="flex items-center gap-3">
+              {user ? (
                 <>
-                  <span className="text-sm text-gray-600">مرحباً، {user.user_metadata?.full_name || user.email}</span>
+                  <span className="text-sm text-gray-600 hidden sm:block">مرحباً، {user.user_metadata?.full_name || user.email}</span>
+                  
+                  {/* Add Ad Button */}
                   <Button 
                     onClick={() => setShowCreateModal(true)}
                     className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 hidden sm:flex"
@@ -90,25 +84,55 @@ const Index = () => {
                     <Plus className="w-4 h-4 ml-2" />
                     إضافة إعلان
                   </Button>
+                  
+                  {/* Mobile Add Ad Button */}
+                  <Button 
+                    onClick={() => setShowCreateModal(true)}
+                    size="sm"
+                    className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 sm:hidden"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+
+                  {/* Messages Button */}
+                  <Button variant="outline" className="hidden sm:flex">
+                    <MessageCircle className="w-4 h-4 ml-2" />
+                    الرسائل
+                  </Button>
+                  
+                  {/* Mobile Messages Button */}
+                  <Button variant="outline" size="sm" className="sm:hidden">
+                    <MessageCircle className="w-4 h-4" />
+                  </Button>
+
+                  {/* Notifications Button */}
+                  <Button variant="outline" className="hidden sm:flex">
+                    <Bell className="w-4 h-4 ml-2" />
+                    الإشعارات
+                  </Button>
+                  
+                  {/* Mobile Notifications Button */}
+                  <Button variant="outline" size="sm" className="sm:hidden">
+                    <Bell className="w-4 h-4" />
+                  </Button>
+
+                  {/* My Account Button */}
+                  <Button 
+                    onClick={handleDashboardClick}
+                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+                  >
+                    <User className="w-4 h-4 ml-2" />
+                    <span className="hidden sm:inline">حسابي</span>
+                  </Button>
                 </>
+              ) : (
+                <Button 
+                  onClick={handleAuthClick}
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+                >
+                  تسجيل الدخول
+                </Button>
               )}
-              <Button variant="outline" className="hidden sm:flex">
-                <MessageCircle className="w-4 h-4 ml-2" />
-                الرسائل
-              </Button>
-              <Button 
-                onClick={handleAuthClick}
-                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
-              >
-                {user ? (
-                  <>
-                    <LogOut className="w-4 h-4 ml-2" />
-                    تسجيل الخروج
-                  </>
-                ) : (
-                  'تسجيل الدخول'
-                )}
-              </Button>
             </div>
           </div>
         </div>
