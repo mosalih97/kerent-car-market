@@ -14,16 +14,218 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      ad_views: {
+        Row: {
+          ad_id: string
+          id: string
+          viewed_at: string
+          viewer_id: string | null
+        }
+        Insert: {
+          ad_id: string
+          id?: string
+          viewed_at?: string
+          viewer_id?: string | null
+        }
+        Update: {
+          ad_id?: string
+          id?: string
+          viewed_at?: string
+          viewer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_views_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "ads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ad_views_viewer_id_fkey"
+            columns: ["viewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ads: {
+        Row: {
+          ad_type: Database["public"]["Enums"]["ad_type"]
+          brand: string
+          city: string
+          condition: Database["public"]["Enums"]["car_condition"]
+          created_at: string
+          description: string | null
+          id: string
+          images: string[] | null
+          is_active: boolean
+          is_featured: boolean
+          is_premium: boolean
+          mileage: number | null
+          model: string
+          phone: string
+          price: number
+          title: string
+          updated_at: string
+          user_id: string
+          views_count: number
+          year: number
+        }
+        Insert: {
+          ad_type?: Database["public"]["Enums"]["ad_type"]
+          brand: string
+          city: string
+          condition?: Database["public"]["Enums"]["car_condition"]
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          is_active?: boolean
+          is_featured?: boolean
+          is_premium?: boolean
+          mileage?: number | null
+          model: string
+          phone: string
+          price: number
+          title: string
+          updated_at?: string
+          user_id: string
+          views_count?: number
+          year: number
+        }
+        Update: {
+          ad_type?: Database["public"]["Enums"]["ad_type"]
+          brand?: string
+          city?: string
+          condition?: Database["public"]["Enums"]["car_condition"]
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          is_active?: boolean
+          is_featured?: boolean
+          is_premium?: boolean
+          mileage?: number | null
+          model?: string
+          phone?: string
+          price?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+          views_count?: number
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ads_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contact_reveals: {
+        Row: {
+          ad_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          ad_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          ad_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_reveals_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "ads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contact_reveals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          ads_count: number
+          city: string | null
+          created_at: string
+          credits: number
+          full_name: string
+          id: string
+          is_active: boolean
+          is_featured: boolean
+          is_premium: boolean
+          phone: string | null
+          updated_at: string
+          user_type: Database["public"]["Enums"]["user_type"]
+        }
+        Insert: {
+          ads_count?: number
+          city?: string | null
+          created_at?: string
+          credits?: number
+          full_name: string
+          id: string
+          is_active?: boolean
+          is_featured?: boolean
+          is_premium?: boolean
+          phone?: string | null
+          updated_at?: string
+          user_type?: Database["public"]["Enums"]["user_type"]
+        }
+        Update: {
+          ads_count?: number
+          city?: string | null
+          created_at?: string
+          credits?: number
+          full_name?: string
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean
+          is_premium?: boolean
+          phone?: string | null
+          updated_at?: string
+          user_type?: Database["public"]["Enums"]["user_type"]
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_ad_priority: {
+        Args: {
+          ad_type: Database["public"]["Enums"]["ad_type"]
+          is_featured: boolean
+          is_premium: boolean
+        }
+        Returns: number
+      }
     }
     Enums: {
-      [_ in never]: never
+      ad_type: "standard" | "featured" | "premium"
+      car_condition: "new" | "used" | "excellent" | "good" | "fair"
+      user_type: "free" | "premium"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +352,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      ad_type: ["standard", "featured", "premium"],
+      car_condition: ["new", "used", "excellent", "good", "fair"],
+      user_type: ["free", "premium"],
+    },
   },
 } as const
