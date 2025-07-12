@@ -1,17 +1,19 @@
 
 import { useState } from 'react';
-import { User, Settings, MessageSquare, Bell, Plus, LogOut, Edit, Trash2, Eye } from 'lucide-react';
+import { User, Settings, MessageSquare, Bell, Plus, LogOut, Edit, Trash2, Eye, Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useMyAds, useDeleteAd } from '@/hooks/useAds';
+import { useCredits } from '@/hooks/useCredits';
 import CreateAdModal from './CreateAdModal';
 
 const UserDashboard = () => {
   const { user, signOut } = useAuth();
   const { data: myAds, isLoading } = useMyAds();
+  const { credits, loading: creditsLoading } = useCredits();
   const deleteAdMutation = useDeleteAd();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -34,8 +36,20 @@ const UserDashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4" dir="rtl">
       <div className="container mx-auto max-w-6xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">لوحة التحكم</h1>
-          <p className="text-gray-600">مرحباً {user?.user_metadata?.full_name || user?.email}</p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">لوحة التحكم</h1>
+              <p className="text-gray-600">مرحباً {user?.user_metadata?.full_name || user?.email}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
+                <Coins className="w-4 h-4" />
+                <span className="font-medium">
+                  {creditsLoading ? '...' : credits} كريديت
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <Tabs defaultValue="ads" className="space-y-6">
@@ -213,6 +227,18 @@ const UserDashboard = () => {
                     <label className="text-sm font-medium text-gray-500">نوع الحساب</label>
                     <Badge variant="secondary">مجاني</Badge>
                   </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">الكريديت المتاح</label>
+                    <div className="flex items-center gap-2">
+                      <Coins className="w-4 h-4 text-yellow-600" />
+                      <span className="text-lg font-bold text-yellow-600">
+                        {creditsLoading ? 'جاري التحميل...' : `${credits} كريديت`}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1">
+                      يستخدم الكريديت لعرض أرقام الهواتف في الإعلانات
+                    </p>
+                  </div>
                   <div className="pt-4 border-t">
                     <Button 
                       onClick={signOut}
@@ -246,6 +272,16 @@ const UserDashboard = () => {
                     <Settings className="w-4 h-4 ml-2" />
                     إعدادات الخصوصية
                   </Button>
+                  <div className="pt-4 border-t">
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <h4 className="font-medium text-blue-800 mb-2">كيفية الحصول على كريديت إضافي</h4>
+                      <p className="text-sm text-blue-600">
+                        • يتم إعادة تعيين الكريديت شهرياً إلى 20 كريديت
+                        <br />
+                        • ترقية الحساب للحصول على كريديت إضافي
+                      </p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>

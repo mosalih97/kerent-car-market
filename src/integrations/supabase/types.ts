@@ -208,6 +208,50 @@ export type Database = {
         }
         Relationships: []
       }
+      user_credits: {
+        Row: {
+          credits_remaining: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          credits_remaining?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          credits_remaining?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_credits_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
