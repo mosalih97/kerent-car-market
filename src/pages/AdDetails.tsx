@@ -7,6 +7,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useCredits } from '@/hooks/useCredits';
+import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
 
 type Ad = Database['public']['Tables']['ads']['Row'] & {
@@ -16,16 +18,18 @@ type Ad = Database['public']['Tables']['ads']['Row'] & {
 const AdDetails = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { credits, deductCredit, refreshCredits } = useCredits();
+  const { toast } = useToast();
   const [ad, setAd] = useState<Ad | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showContactInfo, setShowContactInfo] = useState(false);
-  const [userCredits, setUserCredits] = useState<number>(0);
+  const [isRevealing, setIsRevealing] = useState(false);
 
   useEffect(() => {
     fetchAd();
-    if (user) {
-      fetchUserCredits();
+    if (user && id) {
+      checkIfContactRevealed();
     }
   }, [id, user]);
 
@@ -50,19 +54,18 @@ const AdDetails = () => {
     setLoading(false);
   };
 
-  const fetchUserCredits = async () => {
-    if (!user) return;
-    
+  const checkIfContactRevealed = async () => {
+    if (!user || !id) return;
+
     const { data, error } = await supabase
-      .from('profiles')
-      .select('credits')
-      .eq('id', user.id)
+      .from('contact_reveals')
+      .select('id')
+      .eq('ad_id', id)
+      .eq('user_id', user.id)
       .single();
 
-    if (error) {
-      console.error('Error fetching credits:', error);
-    } else {
-      setUserCredits(data.credits);
+    if (!error && data) {
+      setShowContactInfo(true);
     }
   };
 
@@ -82,14 +85,28 @@ const AdDetails = () => {
   };
 
   const revealContact = async () => {
-    if (!user || !ad) return;
-
-    if (userCredits < 1) {
-      alert('ليس لديك كريديت كافي لعرض معلومات الاتصال');
+    if (!user || !ad) {
+      toast({
+        title: "خطأ",
+        description: "يجب تسجيل الدخول أولاً",
+        variant: "destructive",
+      });
       return;
     }
 
+    if (credits < 1) {
+      toast({
+        title: "رصيد غير كافي",
+        description: "ليس لديك كريديت كافي لعرض معلومات الاتصال",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsRevealing(true);
+
     try {
+      // أولاً نسجل الكشف عن معلومات الاتصال
       const { error: insertError } = await supabase
         .from('contact_reveals')
         .insert({
@@ -101,20 +118,28 @@ const AdDetails = () => {
         throw insertError;
       }
 
-      // استخدام edge function لخصم الكريديت
-      const { error: functionError } = await supabase.functions.invoke('deduct-credit', {
-        body: { user_id: user.id }
-      });
-
-      if (functionError) {
-        throw functionError;
+      // ثم نخصم الكريديت
+      const success = await deductCredit();
+      
+      if (success) {
+        setShowContactInfo(true);
+        toast({
+          title: "تم بنجاح",
+          description: "تم عرض معلومات الاتصال",
+        });
+      } else {
+        throw new Error('فشل في خصم الكريديت');
       }
 
-      setShowContactInfo(true);
-      setUserCredits(prev => prev - 1);
     } catch (error) {
       console.error('Error revealing contact:', error);
-      alert('حدث خطأ في عرض معلومات الاتصال');
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ في عرض معلومات الاتصال",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRevealing(false);
     }
   };
 
@@ -289,27 +314,32 @@ const AdDetails = () => {
                 {user && user.id !== ad.user_id ? (
                   <div className="space-y-3">
                     {showContactInfo ? (
-                      <div className="p-4 bg-green-50 rounded-lg">
+                      <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                         <div className="flex items-center gap-2 text-green-800">
                           <Phone className="w-4 h-4" />
-                          <span className="font-medium">{ad.phone}</span>
+                          <span className="font-medium text-lg" dir="ltr">{ad.phone}</span>
                         </div>
+                        <p className="text-sm text-green-600 mt-2">
+                          يمكنك الآن الاتصال بالبائع على هذا الرقم
+                        </p>
                       </div>
                     ) : (
-                      <div className="space-y-2">
-                        <p className="text-sm text-gray-600">
-                          اضغط لإظهار رقم الهاتف (يتطلب 1 كريديت)
-                        </p>
-                        <p className="text-sm text-blue-600">
-                          رصيدك الحالي: {userCredits} كريديت
-                        </p>
+                      <div className="space-y-3">
+                        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                          <p className="text-sm text-blue-800 mb-2">
+                            اضغط لإظهار رقم الهاتف (يتطلب 1 كريديت)
+                          </p>
+                          <p className="text-sm text-blue-600">
+                            رصيدك الحالي: {credits} كريديت
+                          </p>
+                        </div>
                         <Button 
                           onClick={revealContact}
-                          disabled={userCredits < 1}
+                          disabled={credits < 1 || isRevealing}
                           className="w-full"
                         >
                           <Phone className="w-4 h-4 ml-2" />
-                          إظهار رقم الهاتف (1 كريديت)
+                          {isRevealing ? 'جاري الإظهار...' : 'إظهار رقم الهاتف (1 كريديت)'}
                         </Button>
                       </div>
                     )}
@@ -317,6 +347,10 @@ const AdDetails = () => {
                 ) : user && user.id === ad.user_id ? (
                   <div className="p-4 bg-blue-50 rounded-lg">
                     <p className="text-blue-800">هذا إعلانك</p>
+                    <div className="flex items-center gap-2 text-blue-600 mt-2">
+                      <Phone className="w-4 h-4" />
+                      <span className="font-medium" dir="ltr">{ad.phone}</span>
+                    </div>
                   </div>
                 ) : (
                   <div className="p-4 bg-gray-50 rounded-lg">
