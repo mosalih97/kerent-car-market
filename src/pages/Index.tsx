@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Search, Filter, MapPin, Calendar, Eye, Phone, MessageSquare, Bell, Plus } from 'lucide-react';
+import { Search, Filter, MapPin, Calendar, Eye, Phone, MessageSquare, Bell, Plus, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -63,77 +63,69 @@ const Index = () => {
       <Header />
       
       <main className="container mx-auto px-4 py-8">
-        {/* شريط البحث والفلاتر */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <div className="flex flex-col gap-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Hero Section with Search */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-xl shadow-xl p-8 mb-8 text-white text-center">
+          <h1 className="text-4xl font-bold mb-4">اعثر على سيارة أحلامك</h1>
+          <p className="text-xl mb-8 text-blue-100">
+            أكثر من 3 سيارة متاحة للبيع في جميع أنحاء السودان
+          </p>
+          
+          {/* Search Filters */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
               <div className="relative">
-                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <MapPin className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <Input
                   placeholder="المدينة..."
                   value={searchFilters.city}
                   onChange={(e) => setSearchFilters(prev => ({ ...prev, city: e.target.value }))}
-                  className="pr-10"
+                  className="pr-10 bg-white text-gray-900"
                 />
               </div>
               
-              <Select value={searchFilters.brand} onValueChange={(value) => setSearchFilters(prev => ({ ...prev, brand: value === 'all' ? '' : value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="اختر الماركة" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">جميع الماركات</SelectItem>
-                  {brands.map((brand) => (
-                    <SelectItem key={brand} value={brand}>
-                      {brand}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input
+                placeholder="اكتب اسم الماركة..."
+                value={searchFilters.brand}
+                onChange={(e) => setSearchFilters(prev => ({ ...prev, brand: e.target.value }))}
+                className="bg-white text-gray-900"
+              />
 
-              <Select value={searchFilters.condition} onValueChange={(value) => setSearchFilters(prev => ({ ...prev, condition: value === 'all' ? '' : value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="حالة السيارة" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">جميع الحالات</SelectItem>
-                  <SelectItem value="new">جديدة</SelectItem>
-                  <SelectItem value="used">مستعملة</SelectItem>
-                  <SelectItem value="excellent">ممتازة</SelectItem>
-                  <SelectItem value="good">جيدة</SelectItem>
-                  <SelectItem value="fair">مقبولة</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="من"
+                  type="number"
+                  value={searchFilters.minPrice}
+                  onChange={(e) => setSearchFilters(prev => ({ ...prev, minPrice: e.target.value }))}
+                  className="bg-white text-gray-900"
+                />
+                <Input
+                  placeholder="إلى"
+                  type="number"
+                  value={searchFilters.maxPrice}
+                  onChange={(e) => setSearchFilters(prev => ({ ...prev, maxPrice: e.target.value }))}
+                  className="bg-white text-gray-900"
+                />
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                placeholder="الحد الأدنى للسعر..."
-                type="number"
-                value={searchFilters.minPrice}
-                onChange={(e) => setSearchFilters(prev => ({ ...prev, minPrice: e.target.value }))}
-              />
-              <Input
-                placeholder="الحد الأقصى للسعر..."
-                type="number"
-                value={searchFilters.maxPrice}
-                onChange={(e) => setSearchFilters(prev => ({ ...prev, maxPrice: e.target.value }))}
-              />
+            <div className="text-right mb-4">
+              <span className="text-white/80 text-sm">نطاق السعر</span>
             </div>
-
-            <div className="flex gap-2">
+            
+            <div className="flex gap-2 justify-center">
               <Button 
                 onClick={handleSearch}
                 disabled={isSearching}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-white text-blue-600 hover:bg-blue-50 font-bold px-8"
               >
-                <Filter className="w-4 h-4 ml-2" />
+                <Search className="w-4 h-4 ml-2" />
                 {isSearching ? 'البحث...' : 'بحث'}
               </Button>
               {hasSearched && (
                 <Button 
                   onClick={handleClearSearch}
                   variant="outline"
+                  className="border-white text-white hover:bg-white/10"
                 >
                   مسح البحث
                 </Button>
@@ -147,25 +139,44 @@ const Index = () => {
           <PremiumCard variant="home" />
         </div>
 
-        {/* أزرار سريعة للمستخدمين المسجلين */}
-        {user && (
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-            <div className="flex flex-wrap gap-4 justify-center">
-              <Button className="bg-green-600 hover:bg-green-700 text-white">
-                <Plus className="w-4 h-4 ml-2" />
-                إضافة إعلان
-              </Button>
-              <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
-                <MessageSquare className="w-4 h-4 ml-2" />
-                الرسائل
-              </Button>
-              <Button variant="outline" className="border-purple-600 text-purple-600 hover:bg-purple-50">
-                <Bell className="w-4 h-4 ml-2" />
-                الإشعارات
-              </Button>
-            </div>
+        {/* أزرار سريعة للمستخدمين */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <div className="flex flex-wrap gap-4 justify-center">
+            {user ? (
+              <>
+                <Button className="bg-green-600 hover:bg-green-700 text-white">
+                  <Plus className="w-4 h-4 ml-2" />
+                  إضافة إعلان
+                </Button>
+                <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
+                  <MessageSquare className="w-4 h-4 ml-2" />
+                  الرسائل
+                </Button>
+                <Button variant="outline" className="border-purple-600 text-purple-600 hover:bg-purple-50">
+                  <Bell className="w-4 h-4 ml-2" />
+                  الإشعارات
+                </Button>
+                <Link to="/dashboard">
+                  <Button variant="outline" className="border-gray-600 text-gray-600 hover:bg-gray-50">
+                    <User className="w-4 h-4 ml-2" />
+                    حسابي
+                  </Button>
+                </Link>
+              </>) : (
+              <Link to="/auth">
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                  تسجيل الدخول
+                </Button>
+              </Link>
+            )}
           </div>
-        )}
+        </div>
+
+        {/* عنوان القسم */}
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">السيارات المتاحة</h2>
+          <p className="text-gray-600">اكتشف أفضل العروض المتاحة من البائعين الموثوقين</p>
+        </div>
 
         {/* عرض حالة البحث */}
         {hasSearched && (
