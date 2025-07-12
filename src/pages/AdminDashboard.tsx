@@ -1,14 +1,11 @@
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useIsAdmin, useAdminStats, useAdminUsers, useAdminAds, useAdminReports, useUpdateAdStatus, useUpdateReportStatus } from '@/hooks/useAdmin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, FileText, AlertTriangle, TrendingUp, Eye, CheckCircle, XCircle } from 'lucide-react';
-import { toast } from 'sonner';
+import { Users, FileText, AlertTriangle, Eye, CheckCircle, XCircle } from 'lucide-react';
 import AdminNavigation from '@/components/AdminNavigation';
 
 const AdminDashboard = () => {
@@ -112,8 +109,8 @@ const AdminDashboard = () => {
                         </Badge>
                         {user.user_roles && user.user_roles.length > 0 && (
                           <Badge variant="outline">
-                            {user.user_roles[0].role === 'admin' ? 'مدير' : 
-                             user.user_roles[0].role === 'moderator' ? 'مشرف' : 'مستخدم'}
+                            {user.user_roles[0]?.role === 'admin' ? 'مدير' : 
+                             user.user_roles[0]?.role === 'moderator' ? 'مشرف' : 'مستخدم'}
                           </Badge>
                         )}
                       </div>
@@ -178,7 +175,7 @@ const AdminDashboard = () => {
                         <div>
                           <h3 className="font-semibold">{report.ads?.title}</h3>
                           <p className="text-sm text-gray-600">
-                            مبلغ عنه بواسطة: {report.profiles?.full_name || 'مستخدم غير محدد'}
+                            مبلغ عنه بواسطة: {report.reporter?.full_name || 'مستخدم غير محدد'}
                           </p>
                           <p className="text-sm text-gray-600">السبب: {report.reason}</p>
                           {report.description && (

@@ -123,7 +123,7 @@ export const useAdminReports = () => {
         .select(`
           *,
           ads!inner(title, id),
-          profiles!inner(full_name)
+          reporter:profiles!reporter_id(full_name)
         `)
         .order('created_at', { ascending: false });
 
