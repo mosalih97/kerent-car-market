@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAdmin } from '@/hooks/useAdmin';
+import { useIsAdmin, useAdminStats, useAdminUsers, useAdminAds, useAdminReports, useUpdateAdStatus, useUpdateReportStatus } from '@/hooks/useAdmin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,125 +12,14 @@ import { toast } from 'sonner';
 import AdminNavigation from '@/components/AdminNavigation';
 
 const AdminDashboard = () => {
-  const { isAdmin, isLoading: adminLoading } = useAdmin();
-  const queryClient = useQueryClient();
+  const { data: isAdmin, isLoading: adminLoading } = useIsAdmin();
+  const { data: stats } = useAdminStats();
+  const { data: users } = useAdminUsers();
+  const { data: ads } = useAdminAds();
+  const { data: reports } = useAdminReports();
+  const updateAdStatus = useUpdateAdStatus();
+  const updateReportStatus = useUpdateReportStatus();
   const [activeTab, setActiveTab] = useState('overview');
-
-  // إحصائيات عامة
-  const { data: stats } = useQuery({
-    queryKey: ['adminStats'],
-    queryFn: async () => {
-      const [usersResult, adsResult, reportsResult] = await Promise.all([
-        supabase.from('profiles').select('id', { count: 'exact' }),
-        supabase.from('ads').select('id', { count: 'exact' }),
-        supabase.from('ad_reports').select('id', { count: 'exact' }).eq('status', 'pending')
-      ]);
-
-      return {
-        totalUsers: usersResult.count || 0,
-        totalAds: adsResult.count || 0,
-        pendingReports: reportsResult.count || 0
-      };
-    },
-    enabled: isAdmin
-  });
-
-  // جلب المستخدمين
-  const { data: users } = useQuery({
-    queryKey: ['adminUsers'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select(`
-          *,
-          user_roles(role)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: isAdmin && activeTab === 'users'
-  });
-
-  // جلب الإعلانات
-  const { data: ads } = useQuery({
-    queryKey: ['adminAds'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('ads')
-        .select(`
-          *,
-          profiles(full_name)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: isAdmin && activeTab === 'ads'
-  });
-
-  // جلب التقارير
-  const { data: reports } = useQuery({
-    queryKey: ['adminReports'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('ad_reports')
-        .select(`
-          *,
-          ads(title),
-          profiles!ad_reports_reporter_id_fkey(full_name)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: isAdmin && activeTab === 'reports'
-  });
-
-  // تغيير حالة الإعلان
-  const toggleAdStatus = useMutation({
-    mutationFn: async ({ adId, isActive }: { adId: string; isActive: boolean }) => {
-      const { error } = await supabase
-        .from('ads')
-        .update({ is_active: !isActive })
-        .eq('id', adId);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['adminAds'] });
-      toast.success('تم تحديث حالة الإعلان');
-    },
-    onError: () => {
-      toast.error('حدث خطأ أثناء تحديث الإعلان');
-    }
-  });
-
-  // معالجة التقارير
-  const handleReport = useMutation({
-    mutationFn: async ({ reportId, action }: { reportId: string; action: 'approve' | 'reject' }) => {
-      const { error } = await supabase
-        .from('ad_reports')
-        .update({
-          status: action === 'approve' ? 'approved' : 'rejected',
-          reviewed_at: new Date().toISOString()
-        })
-        .eq('id', reportId);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['adminReports'] });
-      queryClient.invalidateQueries({ queryKey: ['adminStats'] });
-      toast.success('تم معالجة التقرير');
-    },
-    onError: () => {
-      toast.error('حدث خطأ أثناء معالجة التقرير');
-    }
-  });
 
   if (adminLoading) {
     return (
@@ -221,7 +110,7 @@ const AdminDashboard = () => {
                         <Badge variant={user.is_active ? "default" : "secondary"}>
                           {user.is_active ? "نشط" : "غير نشط"}
                         </Badge>
-                        {user.user_roles?.[0]?.role && (
+                        {user.user_roles && user.user_roles[0] && (
                           <Badge variant="outline">
                             {user.user_roles[0].role === 'admin' ? 'مدير' : 
                              user.user_roles[0].role === 'moderator' ? 'مشرف' : 'مستخدم'}
@@ -263,8 +152,8 @@ const AdminDashboard = () => {
                         <Button
                           size="sm"
                           variant={ad.is_active ? "destructive" : "default"}
-                          onClick={() => toggleAdStatus.mutate({ adId: ad.id, isActive: ad.is_active })}
-                          disabled={toggleAdStatus.isPending}
+                          onClick={() => updateAdStatus.mutate({ adId: ad.id, status: ad.is_active ? 'inactive' : 'active' })}
+                          disabled={updateAdStatus.isPending}
                         >
                           {ad.is_active ? "إلغاء تفعيل" : "تفعيل"}
                         </Button>
@@ -312,8 +201,8 @@ const AdminDashboard = () => {
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() => handleReport.mutate({ reportId: report.id, action: 'approve' })}
-                            disabled={handleReport.isPending}
+                            onClick={() => updateReportStatus.mutate({ reportId: report.id, status: 'approved' })}
+                            disabled={updateReportStatus.isPending}
                           >
                             <CheckCircle className="w-4 h-4 ml-1" />
                             قبول التقرير
@@ -321,8 +210,8 @@ const AdminDashboard = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleReport.mutate({ reportId: report.id, action: 'reject' })}
-                            disabled={handleReport.isPending}
+                            onClick={() => updateReportStatus.mutate({ reportId: report.id, status: 'rejected' })}
+                            disabled={updateReportStatus.isPending}
                           >
                             <XCircle className="w-4 h-4 ml-1" />
                             رفض التقرير
