@@ -76,16 +76,27 @@ export const useAdminUsers = () => {
   return useQuery({
     queryKey: ['adminUsers'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          user_roles(role)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data;
+      if (profilesError) throw profilesError;
+
+      // Get user roles separately
+      const { data: userRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
+
+      if (rolesError) throw rolesError;
+
+      // Combine the data
+      const usersWithRoles = profiles?.map(profile => ({
+        ...profile,
+        user_roles: userRoles?.filter(role => role.user_id === profile.id) || []
+      }));
+
+      return usersWithRoles;
     },
     enabled: !!isAdmin,
   });
@@ -118,17 +129,32 @@ export const useAdminReports = () => {
   return useQuery({
     queryKey: ['adminReports'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: reports, error: reportsError } = await supabase
         .from('ad_reports')
         .select(`
           *,
-          ads!inner(title, id),
-          profiles!reporter_id(full_name)
+          ads!inner(title, id)
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data;
+      if (reportsError) throw reportsError;
+
+      // Get reporter profiles separately
+      const reporterIds = reports?.map(r => r.reporter_id).filter(Boolean) || [];
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', reporterIds);
+
+      if (profilesError) throw profilesError;
+
+      // Combine the data
+      const reportsWithProfiles = reports?.map(report => ({
+        ...report,
+        profiles: profiles?.find(p => p.id === report.reporter_id)
+      }));
+
+      return reportsWithProfiles;
     },
     enabled: !!isAdmin,
   });
