@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, MapPin, Car, DollarSign, Filter, Star, Eye, MessageCircle, Plus, Bell, User } from "lucide-react";
@@ -8,12 +9,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useAds } from "@/hooks/useAds";
+import { useSearch } from "@/hooks/useSearch";
 import CreateAdModal from "@/components/CreateAdModal";
 
 const Index = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: ads, isLoading } = useAds();
+  const { searchAds, clearSearch, isSearching, searchResults, hasSearched } = useSearch();
   const [showCreateModal, setShowCreateModal] = useState(false);
   
   // Search filters
@@ -37,6 +40,21 @@ const Index = () => {
     navigate(`/ad/${adId}`);
   };
 
+  const handleSearch = () => {
+    searchAds(searchFilters);
+  };
+
+  const handleClearSearch = () => {
+    clearSearch();
+    setSearchFilters({
+      city: '',
+      brand: '',
+      minPrice: '',
+      maxPrice: '',
+      condition: ''
+    });
+  };
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ar-SD').format(price);
   };
@@ -52,6 +70,10 @@ const Index = () => {
     if (diffDays <= 30) return `منذ ${Math.ceil(diffDays / 7)} أسابيع`;
     return `منذ ${Math.ceil(diffDays / 30)} شهر`;
   };
+
+  // Determine which ads to display
+  const displayAds = hasSearched ? searchResults : (ads || []);
+  const isLoadingAds = hasSearched ? isSearching : isLoading;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50" dir="rtl">
@@ -182,18 +204,12 @@ const Index = () => {
                     <Car className="w-4 h-4 text-blue-600" />
                     الماركة
                   </label>
-                  <Select onValueChange={(value) => setSearchFilters(prev => ({ ...prev, brand: value }))}>
-                    <SelectTrigger className="h-12 text-right">
-                      <SelectValue placeholder="اختر الماركة" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="toyota">تويوتا</SelectItem>
-                      <SelectItem value="honda">هوندا</SelectItem>
-                      <SelectItem value="nissan">نيسان</SelectItem>
-                      <SelectItem value="hyundai">هيونداي</SelectItem>
-                      <SelectItem value="bmw">بي ام دبليو</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Input 
+                    placeholder="اكتب اسم الماركة" 
+                    className="h-12 text-right"
+                    value={searchFilters.brand}
+                    onChange={(e) => setSearchFilters(prev => ({ ...prev, brand: e.target.value }))}
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -237,10 +253,26 @@ const Index = () => {
                 </div>
               </div>
 
-              <Button className="w-full h-14 text-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold rounded-lg shadow-lg">
-                <Search className="w-5 h-5 ml-3" />
-                ابحث الآن
-              </Button>
+              <div className="flex gap-4">
+                <Button 
+                  onClick={handleSearch}
+                  disabled={isSearching}
+                  className="flex-1 h-14 text-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold rounded-lg shadow-lg"
+                >
+                  <Search className="w-5 h-5 ml-3" />
+                  {isSearching ? 'جارٍ البحث...' : 'ابحث الآن'}
+                </Button>
+                
+                {hasSearched && (
+                  <Button 
+                    onClick={handleClearSearch}
+                    variant="outline"
+                    className="h-14 px-8 text-lg font-bold"
+                  >
+                    مسح البحث
+                  </Button>
+                )}
+              </div>
             </Card>
           </div>
         </div>
@@ -251,14 +283,17 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-              السيارات المتاحة
+              {hasSearched ? `نتائج البحث (${displayAds.length})` : 'السيارات المتاحة'}
             </h3>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              اكتشف أفضل العروض المتاحة من البائعين الموثوقين
+              {hasSearched 
+                ? (displayAds.length > 0 ? 'إليك النتائج التي عثرنا عليها' : 'لم نعثر على نتائج مطابقة لبحثك')
+                : 'اكتشف أفضل العروض المتاحة من البائعين الموثوقين'
+              }
             </p>
           </div>
 
-          {isLoading ? (
+          {isLoadingAds ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <Card key={i} className="animate-pulse">
@@ -273,7 +308,7 @@ const Index = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {ads?.map((ad) => (
+              {displayAds?.map((ad) => (
                 <Card key={ad.id} className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg overflow-hidden bg-white cursor-pointer">
                   <div className="relative">
                     <img 
@@ -374,14 +409,19 @@ const Index = () => {
             </div>
           )}
 
-          {ads && ads.length === 0 && !isLoading && (
+          {displayAds && displayAds.length === 0 && !isLoadingAds && (
             <div className="text-center py-12">
               <Car className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-600 mb-2">لا توجد إعلانات متاحة حالياً</h3>
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                {hasSearched ? 'لا توجد نتائج مطابقة لبحثك' : 'لا توجد إعلانات متاحة حالياً'}
+              </h3>
               <p className="text-gray-500">
-                {user ? 'كن أول من ينشر إعلان سيارة!' : 'سجل الدخول لتتمكن من نشر إعلانك'}
+                {hasSearched 
+                  ? 'جرب تعديل معايير البحث أو مسح المرشحات'
+                  : (user ? 'كن أول من ينشر إعلان سيارة!' : 'سجل الدخول لتتمكن من نشر إعلانك')
+                }
               </p>
-              {user && (
+              {user && !hasSearched && (
                 <Button 
                   onClick={() => setShowCreateModal(true)}
                   className="mt-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
