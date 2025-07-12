@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, MapPin, Car, DollarSign, Filter, Star, Eye, MessageCircle, Plus, Bell, User } from "lucide-react";
@@ -11,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAds } from "@/hooks/useAds";
 import { useSearch } from "@/hooks/useSearch";
 import CreateAdModal from "@/components/CreateAdModal";
+import PremiumCard from "@/components/PremiumCard";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -278,6 +278,13 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Premium Plan Card */}
+      <section className="py-8 bg-white">
+        <div className="container mx-auto px-4">
+          <PremiumCard variant="home" />
+        </div>
+      </section>
+
       {/* Ads Section */}
       <section className="py-16">
         <div className="container mx-auto px-4">
@@ -461,7 +468,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg flex items-center justify-center">
@@ -500,7 +507,13 @@ const Index = () => {
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+          
+          {/* Premium Card in Footer */}
+          <div className="mb-8">
+            <PremiumCard variant="footer" />
+          </div>
+          
+          <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
             <p>&copy; 2024 الكيرين. جميع الحقوق محفوظة.</p>
           </div>
         </div>

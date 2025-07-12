@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { User, Settings, MessageSquare, Bell, Plus, LogOut, Edit, Trash2, Eye, Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMyAds, useDeleteAd } from '@/hooks/useAds';
 import { useCredits } from '@/hooks/useCredits';
 import CreateAdModal from './CreateAdModal';
+import PremiumCard from './PremiumCard';
 
 const UserDashboard = () => {
   const { user, signOut } = useAuth();
@@ -50,6 +50,11 @@ const UserDashboard = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Premium Card */}
+        <div className="mb-8">
+          <PremiumCard variant="dashboard" />
         </div>
 
         <Tabs defaultValue="ads" className="space-y-6">

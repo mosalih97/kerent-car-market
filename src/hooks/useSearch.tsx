@@ -1,109 +1,113 @@
 
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
+
+type Ad = Database['public']['Tables']['ads']['Row'] & {
+  profiles?: Database['public']['Tables']['profiles']['Row'];
+};
+
+type CarCondition = Database['public']['Enums']['car_condition'];
 
 interface SearchFilters {
   city: string;
   brand: string;
-  condition: string;
   minPrice: string;
   maxPrice: string;
-}
-
-interface Ad {
-  id: string;
-  title: string;
-  description: string | null;
-  price: number;
-  brand: string;
-  model: string;
-  year: number;
-  mileage: number | null;
   condition: string;
-  city: string;
-  phone: string;
-  images: string[] | null;
-  is_featured: boolean;
-  is_premium: boolean;
-  views_count: number;
-  created_at: string;
-  profiles: {
-    full_name: string;
-    is_premium: boolean;
-  };
 }
 
 export const useSearch = () => {
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<Ad[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+    city: '',
+    brand: '',
+    minPrice: '',
+    maxPrice: '',
+    condition: ''
+  });
 
-  const searchAds = async (filters: SearchFilters) => {
-    setIsSearching(true);
-    setHasSearched(true);
-
-    try {
+  const searchQuery = useQuery({
+    queryKey: ['searchAds', searchFilters],
+    queryFn: async () => {
+      console.log('Searching with filters:', searchFilters);
+      
       let query = supabase
         .from('ads')
         .select(`
           *,
-          profiles!inner(*)
+          profiles(*)
         `)
         .eq('is_active', true);
 
-      if (filters.city) {
-        query = query.eq('city', filters.city);
+      if (searchFilters.city) {
+        query = query.eq('city', searchFilters.city);
       }
       
-      if (filters.brand) {
-        query = query.ilike('brand', `%${filters.brand}%`);
+      if (searchFilters.brand) {
+        query = query.ilike('brand', `%${searchFilters.brand}%`);
       }
       
-      if (filters.condition) {
-        query = query.eq('condition', filters.condition);
+      if (searchFilters.condition) {
+        // Type assertion to ensure the condition matches the enum
+        query = query.eq('condition', searchFilters.condition as CarCondition);
       }
       
-      if (filters.minPrice) {
-        const minPrice = parseInt(filters.minPrice);
+      if (searchFilters.minPrice) {
+        const minPrice = parseInt(searchFilters.minPrice);
         if (!isNaN(minPrice)) {
           query = query.gte('price', minPrice);
         }
       }
       
-      if (filters.maxPrice) {
-        const maxPrice = parseInt(filters.maxPrice);
+      if (searchFilters.maxPrice) {
+        const maxPrice = parseInt(searchFilters.maxPrice);
         if (!isNaN(maxPrice)) {
           query = query.lte('price', maxPrice);
         }
       }
 
-      const { data, error } = await query.order('created_at', { ascending: false });
+      query = query.order('created_at', { ascending: false });
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('Search error:', error);
-        setSearchResults([]);
-        return;
+        throw error;
       }
 
-      setSearchResults(data as Ad[]);
-    } catch (error) {
-      console.error('Search error:', error);
-      setSearchResults([]);
-    } finally {
-      setIsSearching(false);
-    }
+      console.log('Search results:', data);
+      return data as Ad[];
+    },
+    enabled: false // Only run when explicitly called
+  });
+
+  const searchAds = (filters: SearchFilters) => {
+    console.log('Starting search with filters:', filters);
+    setSearchFilters(filters);
+    setHasSearched(true);
+    searchQuery.refetch();
   };
 
   const clearSearch = () => {
-    setSearchResults([]);
+    console.log('Clearing search');
     setHasSearched(false);
+    setSearchFilters({
+      city: '',
+      brand: '',
+      minPrice: '',
+      maxPrice: '',
+      condition: ''
+    });
   };
 
   return {
     searchAds,
     clearSearch,
-    isSearching,
-    searchResults,
-    hasSearched
+    isSearching: searchQuery.isLoading,
+    searchResults: searchQuery.data || [],
+    hasSearched,
+    searchError: searchQuery.error
   };
 };
