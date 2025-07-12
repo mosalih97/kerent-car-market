@@ -74,12 +74,12 @@ const Index = () => {
                 />
               </div>
               
-              <Select value={searchFilters.brand} onValueChange={(value) => setSearchFilters(prev => ({ ...prev, brand: value }))}>
+              <Select value={searchFilters.brand} onValueChange={(value) => setSearchFilters(prev => ({ ...prev, brand: value === 'all' ? '' : value }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="اختر الماركة" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">جميع الماركات</SelectItem>
+                  <SelectItem value="all">جميع الماركات</SelectItem>
                   {brands.map((brand) => (
                     <SelectItem key={brand} value={brand}>
                       {brand}
@@ -88,12 +88,12 @@ const Index = () => {
                 </SelectContent>
               </Select>
 
-              <Select value={searchFilters.condition} onValueChange={(value) => setSearchFilters(prev => ({ ...prev, condition: value }))}>
+              <Select value={searchFilters.condition} onValueChange={(value) => setSearchFilters(prev => ({ ...prev, condition: value === 'all' ? '' : value }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="حالة السيارة" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">جميع الحالات</SelectItem>
+                  <SelectItem value="all">جميع الحالات</SelectItem>
                   <SelectItem value="new">جديدة</SelectItem>
                   <SelectItem value="used">مستعملة</SelectItem>
                   <SelectItem value="excellent">ممتازة</SelectItem>
