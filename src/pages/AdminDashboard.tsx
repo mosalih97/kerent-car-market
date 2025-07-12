@@ -175,7 +175,7 @@ const AdminDashboard = () => {
                         <div>
                           <h3 className="font-semibold">{report.ads?.title}</h3>
                           <p className="text-sm text-gray-600">
-                            مبلغ عنه بواسطة: {report.reporter?.full_name || 'مستخدم غير محدد'}
+                            مبلغ عنه بواسطة: {report.profiles?.full_name || 'مستخدم غير محدد'}
                           </p>
                           <p className="text-sm text-gray-600">السبب: {report.reason}</p>
                           {report.description && (
