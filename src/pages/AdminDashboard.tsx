@@ -110,7 +110,7 @@ const AdminDashboard = () => {
                         <Badge variant={user.is_active ? "default" : "secondary"}>
                           {user.is_active ? "نشط" : "غير نشط"}
                         </Badge>
-                        {user.user_roles && user.user_roles[0] && (
+                        {user.user_roles && user.user_roles.length > 0 && (
                           <Badge variant="outline">
                             {user.user_roles[0].role === 'admin' ? 'مدير' : 
                              user.user_roles[0].role === 'moderator' ? 'مشرف' : 'مستخدم'}
