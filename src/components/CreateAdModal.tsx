@@ -1,134 +1,189 @@
 
-import { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { useCreateAd } from '@/hooks/useAds';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { Car, Upload, X } from 'lucide-react';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useCreateAd } from "@/hooks/useAds";
+import { useImageUpload } from "@/hooks/useImageUpload";
+import { toast } from "sonner";
+import { X, Upload, Image as ImageIcon } from "lucide-react";
 
 interface CreateAdModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+interface FormData {
+  title: string;
+  description: string;
+  price: number;
+  brand: string;
+  model: string;
+  year: number;
+  mileage?: number;
+  condition: 'new' | 'used' | 'excellent' | 'good' | 'fair';
+  city: string;
+  phone: string;
+}
+
 const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
-  const { user } = useAuth();
-  const createAdMutation = useCreateAd();
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    price: '',
-    brand: '',
-    model: '',
-    year: '',
-    mileage: '',
-    condition: 'used' as const,
-    city: '',
-    phone: ''
-  });
+  const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<FormData>();
+  const createAdMutation = useCreateAd();
+  const { uploadImages, uploading } = useImageUpload();
 
-  const [images, setImages] = useState<File[]>([]);
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!user) {
-      alert('يجب تسجيل الدخول أولاً');
-      return;
-    }
+    const fileArray = Array.from(files);
+    const newImages = [...selectedImages, ...fileArray].slice(0, 6); // Max 6 images
+    setSelectedImages(newImages);
 
-    try {
-      await createAdMutation.mutateAsync({
-        title: formData.title,
-        description: formData.description,
-        price: parseFloat(formData.price),
-        brand: formData.brand,
-        model: formData.model,
-        year: parseInt(formData.year),
-        mileage: formData.mileage ? parseInt(formData.mileage) : null,
-        condition: formData.condition,
-        city: formData.city,
-        phone: formData.phone,
-        images: [] // We'll implement image upload later
-      });
-
-      // Reset form and close modal
-      setFormData({
-        title: '',
-        description: '',
-        price: '',
-        brand: '',
-        model: '',
-        year: '',
-        mileage: '',
-        condition: 'used',
-        city: '',
-        phone: ''
-      });
-      setImages([]);
-      onOpenChange(false);
-    } catch (error) {
-      console.error('Error creating ad:', error);
-    }
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const fileList = Array.from(e.target.files);
-      setImages(prev => [...prev, ...fileList].slice(0, 6)); // Max 6 images
-    }
+    const newPreviewUrls = newImages.map(file => URL.createObjectURL(file));
+    // Clean up old URLs
+    imagePreviewUrls.forEach(url => URL.revokeObjectURL(url));
+    setImagePreviewUrls(newPreviewUrls);
   };
 
   const removeImage = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
+    const newImages = selectedImages.filter((_, i) => i !== index);
+    const newPreviewUrls = imagePreviewUrls.filter((_, i) => i !== index);
+    
+    // Clean up removed URL
+    URL.revokeObjectURL(imagePreviewUrls[index]);
+    
+    setSelectedImages(newImages);
+    setImagePreviewUrls(newPreviewUrls);
+  };
+
+  const onSubmit = async (data: FormData) => {
+    try {
+      let imageUrls: string[] = [];
+      
+      if (selectedImages.length > 0) {
+        const fileList = new DataTransfer();
+        selectedImages.forEach(file => fileList.items.add(file));
+        imageUrls = await uploadImages(fileList.files);
+      }
+
+      await createAdMutation.mutateAsync({
+        ...data,
+        images: imageUrls,
+      });
+
+      toast.success("تم إنشاء الإعلان بنجاح!");
+      
+      // Clean up
+      imagePreviewUrls.forEach(url => URL.revokeObjectURL(url));
+      setSelectedImages([]);
+      setImagePreviewUrls([]);
+      reset();
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error creating ad:', error);
+      toast.error("حدث خطأ أثناء إنشاء الإعلان");
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <Car className="w-5 h-5" />
-            إضافة إعلان جديد
-          </DialogTitle>
+          <DialogTitle className="text-2xl font-bold text-center">إضافة إعلان جديد</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Images Upload */}
+          <div className="space-y-4">
+            <Label>صور السيارة (اختياري - حتى 6 صور)</Label>
+            
+            {/* Image previews */}
+            {imagePreviewUrls.length > 0 && (
+              <div className="grid grid-cols-3 gap-4">
+                {imagePreviewUrls.map((url, index) => (
+                  <div key={index} className="relative group">
+                    <img 
+                      src={url} 
+                      alt={`صورة ${index + 1}`}
+                      className="w-full h-32 object-cover rounded-lg border"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Upload button */}
+            {selectedImages.length < 6 && (
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors">
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                  className="hidden"
+                  id="image-upload"
+                />
+                <label 
+                  htmlFor="image-upload" 
+                  className="cursor-pointer flex flex-col items-center gap-2"
+                >
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Upload className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <p className="text-gray-600">اضغط لاختيار الصور</p>
+                  <p className="text-sm text-gray-500">PNG, JPG, WEBP حتى 10MB</p>
+                </label>
+              </div>
+            )}
+          </div>
+
+          {/* Basic Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">عنوان الإعلان</Label>
+            <div>
+              <Label htmlFor="title">عنوان الإعلان *</Label>
               <Input
                 id="title"
-                value={formData.title}
-                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="مثال: تويوتا كامري 2020"
-                className="text-right"
-                required
+                {...register("title", { required: "عنوان الإعلان مطلوب" })}
+                placeholder="مثال: تويوتا كامري 2020 للبيع"
               />
+              {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="price">السعر (جنيه سوداني)</Label>
+            <div>
+              <Label htmlFor="price">السعر (جنيه سوداني) *</Label>
               <Input
                 id="price"
                 type="number"
-                value={formData.price}
-                onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-                placeholder="45000"
-                className="text-right"
-                required
+                {...register("price", { 
+                  required: "السعر مطلوب",
+                  min: { value: 1, message: "السعر يجب أن يكون أكبر من صفر" }
+                })}
+                placeholder="1000000"
               />
+              {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>}
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="brand">الماركة</Label>
-              <Select onValueChange={(value) => setFormData(prev => ({ ...prev, brand: value }))}>
-                <SelectTrigger className="text-right">
+          {/* Car Details */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="brand">الماركة *</Label>
+              <Select onValueChange={(value) => setValue("brand", value)}>
+                <SelectTrigger>
                   <SelectValue placeholder="اختر الماركة" />
                 </SelectTrigger>
                 <SelectContent>
@@ -136,57 +191,59 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
                   <SelectItem value="honda">هوندا</SelectItem>
                   <SelectItem value="nissan">نيسان</SelectItem>
                   <SelectItem value="hyundai">هيونداي</SelectItem>
-                  <SelectItem value="bmw">بي ام دبليو</SelectItem>
+                  <SelectItem value="bmw">بي إم دبليو</SelectItem>
                   <SelectItem value="mercedes">مرسيدس</SelectItem>
+                  <SelectItem value="audi">أودي</SelectItem>
                   <SelectItem value="kia">كيا</SelectItem>
                   <SelectItem value="mazda">مازدا</SelectItem>
+                  <SelectItem value="mitsubishi">ميتسوبيشي</SelectItem>
                 </SelectContent>
               </Select>
+              <input type="hidden" {...register("brand", { required: "الماركة مطلوبة" })} />
+              {errors.brand && <p className="text-red-500 text-sm mt-1">{errors.brand.message}</p>}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="model">الموديل</Label>
+            <div>
+              <Label htmlFor="model">الموديل *</Label>
               <Input
                 id="model"
-                value={formData.model}
-                onChange={(e) => setFormData(prev => ({ ...prev, model: e.target.value }))}
-                placeholder="كامري"
-                className="text-right"
-                required
+                {...register("model", { required: "الموديل مطلوب" })}
+                placeholder="مثال: كامري"
               />
+              {errors.model && <p className="text-red-500 text-sm mt-1">{errors.model.message}</p>}
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="year">سنة الصنع</Label>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="year">سنة الصنع *</Label>
               <Input
                 id="year"
                 type="number"
-                value={formData.year}
-                onChange={(e) => setFormData(prev => ({ ...prev, year: e.target.value }))}
+                {...register("year", { 
+                  required: "سنة الصنع مطلوبة",
+                  min: { value: 1990, message: "السنة يجب أن تكون من 1990 أو أحدث" },
+                  max: { value: new Date().getFullYear() + 1, message: "السنة غير صحيحة" }
+                })}
                 placeholder="2020"
-                className="text-right"
-                min="1990"
-                max="2025"
-                required
               />
+              {errors.year && <p className="text-red-500 text-sm mt-1">{errors.year.message}</p>}
             </div>
 
-            <div className="space-y-2">
+            <div>
               <Label htmlFor="mileage">المسافة المقطوعة (كم)</Label>
               <Input
                 id="mileage"
                 type="number"
-                value={formData.mileage}
-                onChange={(e) => setFormData(prev => ({ ...prev, mileage: e.target.value }))}
-                placeholder="85000"
-                className="text-right"
+                {...register("mileage")}
+                placeholder="100000"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="condition">حالة السيارة</Label>
-              <Select onValueChange={(value: any) => setFormData(prev => ({ ...prev, condition: value }))}>
-                <SelectTrigger className="text-right">
+            <div>
+              <Label htmlFor="condition">حالة السيارة *</Label>
+              <Select onValueChange={(value: any) => setValue("condition", value)}>
+                <SelectTrigger>
                   <SelectValue placeholder="اختر الحالة" />
                 </SelectTrigger>
                 <SelectContent>
@@ -197,12 +254,17 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
                   <SelectItem value="used">مستعملة</SelectItem>
                 </SelectContent>
               </Select>
+              <input type="hidden" {...register("condition", { required: "حالة السيارة مطلوبة" })} />
+              {errors.condition && <p className="text-red-500 text-sm mt-1">{errors.condition.message}</p>}
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="city">المدينة</Label>
-              <Select onValueChange={(value) => setFormData(prev => ({ ...prev, city: value }))}>
-                <SelectTrigger className="text-right">
+          {/* Location & Contact */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="city">المدينة *</Label>
+              <Select onValueChange={(value) => setValue("city", value)}>
+                <SelectTrigger>
                   <SelectValue placeholder="اختر المدينة" />
                 </SelectTrigger>
                 <SelectContent>
@@ -212,91 +274,58 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
                   <SelectItem value="كسلا">كسلا</SelectItem>
                   <SelectItem value="نيالا">نيالا</SelectItem>
                   <SelectItem value="الأبيض">الأبيض</SelectItem>
+                  <SelectItem value="القضارف">القضارف</SelectItem>
+                  <SelectItem value="أم درمان">أم درمان</SelectItem>
+                  <SelectItem value="الخرطوم بحري">الخرطوم بحري</SelectItem>
                 </SelectContent>
               </Select>
+              <input type="hidden" {...register("city", { required: "المدينة مطلوبة" })} />
+              {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city.message}</p>}
+            </div>
+
+            <div>
+              <Label htmlFor="phone">رقم الهاتف *</Label>
+              <Input
+                id="phone"
+                {...register("phone", { 
+                  required: "رقم الهاتف مطلوب",
+                  pattern: { 
+                    value: /^(\+249|0)?[19]\d{8}$/,
+                    message: "رقم الهاتف غير صحيح" 
+                  }
+                })}
+                placeholder="+249123456789"
+              />
+              {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>}
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="phone">رقم الهاتف</Label>
-            <Input
-              id="phone"
-              value={formData.phone}
-              onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-              placeholder="+249123456789"
-              className="text-right"
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">الوصف</Label>
+          {/* Description */}
+          <div>
+            <Label htmlFor="description">وصف الإعلان</Label>
             <Textarea
               id="description"
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder="اكتب وصفاً مفصلاً للسيارة..."
-              className="text-right min-h-[100px]"
+              {...register("description")}
+              placeholder="اكتب وصفاً تفصيلياً للسيارة، حالتها، أي ملاحظات إضافية..."
               rows={4}
             />
           </div>
 
-          <div className="space-y-2">
-            <Label>صور السيارة (اختياري)</Label>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleImageChange}
-                className="hidden"
-                id="images"
-              />
-              <label htmlFor="images" className="cursor-pointer">
-                <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                <p className="text-sm text-gray-600">انقر لرفع الصور (حد أقصى 6 صور)</p>
-              </label>
-            </div>
-            
-            {images.length > 0 && (
-              <div className="grid grid-cols-3 gap-2 mt-4">
-                {images.map((image, index) => (
-                  <div key={index} className="relative">
-                    <img
-                      src={URL.createObjectURL(image)}
-                      alt={`صورة ${index + 1}`}
-                      className="w-full h-20 object-cover rounded"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
+          {/* Submit Button */}
+          <Button 
+            type="submit" 
+            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 py-3 text-lg"
+            disabled={createAdMutation.isPending || uploading}
+          >
+            {createAdMutation.isPending || uploading ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                {uploading ? "جاري تحميل الصور..." : "جاري إنشاء الإعلان..."}
               </div>
+            ) : (
+              "نشر الإعلان"
             )}
-          </div>
-
-          <div className="flex gap-4 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="flex-1"
-            >
-              إلغاء
-            </Button>
-            <Button
-              type="submit"
-              className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
-              disabled={createAdMutation.isPending}
-            >
-              {createAdMutation.isPending ? 'جارٍ النشر...' : 'نشر الإعلان'}
-            </Button>
-          </div>
+          </Button>
         </form>
       </DialogContent>
     </Dialog>

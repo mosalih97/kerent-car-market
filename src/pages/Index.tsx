@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, MapPin, Car, DollarSign, Filter, Star, Eye, Phone, MessageCircle, Plus, Bell, User } from "lucide-react";
+import { Search, MapPin, Car, DollarSign, Filter, Star, Eye, MessageCircle, Plus, Bell, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -31,6 +31,10 @@ const Index = () => {
 
   const handleDashboardClick = () => {
     navigate('/dashboard');
+  };
+
+  const handleAdClick = (adId: string) => {
+    navigate(`/ad/${adId}`);
   };
 
   const formatPrice = (price: number) => {
@@ -270,7 +274,7 @@ const Index = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {ads?.map((ad) => (
-                <Card key={ad.id} className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg overflow-hidden bg-white">
+                <Card key={ad.id} className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg overflow-hidden bg-white cursor-pointer">
                   <div className="relative">
                     <img 
                       src={ad.images?.[0] || "https://images.unsplash.com/photo-1549924231-f129b911e442?w=400&h=300&fit=crop"}
@@ -356,9 +360,12 @@ const Index = () => {
                           )}
                         </div>
                       </div>
-                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                        <Phone className="w-4 h-4 ml-2" />
-                        اتصل
+                      <Button 
+                        size="sm" 
+                        className="bg-blue-600 hover:bg-blue-700"
+                        onClick={() => handleAdClick(ad.id)}
+                      >
+                        مشاهدة التفاصيل
                       </Button>
                     </div>
                   </CardContent>

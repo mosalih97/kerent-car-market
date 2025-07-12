@@ -221,6 +221,10 @@ export type Database = {
         }
         Returns: number
       }
+      reset_monthly_limits: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       ad_type: "standard" | "featured" | "premium"
