@@ -31,7 +31,7 @@ export const useCredits = () => {
         console.error('Error fetching credits:', error);
       } else {
         console.log('Credits fetched:', data.credits);
-        setCredits(data.credits);
+        setCredits(data.credits || 0);
       }
     } catch (error) {
       console.error('Error fetching credits:', error);
@@ -48,24 +48,25 @@ export const useCredits = () => {
 
     try {
       console.log('Attempting to deduct credit for user:', user.id);
+      console.log('Current credits before deduction:', credits);
       
       const { data, error } = await supabase.functions.invoke('deduct-credit', {
         body: { user_id: user.id }
       });
 
       if (error) {
-        console.error('Error deducting credit:', error);
+        console.error('Supabase function error:', error);
         return false;
       }
 
       console.log('Credit deduction response:', data);
       
-      if (data && data.success) {
+      if (data && data.success && typeof data.new_credits === 'number') {
         console.log('Credit deducted successfully, new balance:', data.new_credits);
         setCredits(data.new_credits);
         return true;
       } else {
-        console.error('Credit deduction failed:', data);
+        console.error('Credit deduction failed. Response data:', data);
         return false;
       }
     } catch (error) {

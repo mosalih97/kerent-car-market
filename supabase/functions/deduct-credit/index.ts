@@ -33,11 +33,41 @@ serve(async (req) => {
 
     console.log('Deducting credit for user:', user_id)
 
+    // التحقق من الرصيد الحالي أولاً
+    const { data: currentProfile, error: fetchError } = await supabaseClient
+      .from('profiles')
+      .select('credits')
+      .eq('id', user_id)
+      .single()
+
+    if (fetchError) {
+      console.error('Error fetching current credits:', fetchError)
+      return new Response(
+        JSON.stringify({ error: 'Failed to fetch current credits' }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    if (!currentProfile || currentProfile.credits < 1) {
+      console.error('Insufficient credits. Current balance:', currentProfile?.credits || 0)
+      return new Response(
+        JSON.stringify({ error: 'Insufficient credits' }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
     // خصم كريديت واحد من المستخدم
+    const newCredits = currentProfile.credits - 1
     const { data, error } = await supabaseClient
       .from('profiles')
       .update({ 
-        credits: supabaseClient.sql`credits - 1`
+        credits: newCredits
       })
       .eq('id', user_id)
       .select('credits')
