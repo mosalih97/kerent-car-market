@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -122,7 +123,7 @@ export const useAdminReports = () => {
         .select(`
           *,
           ads!inner(title, id),
-          reporter:profiles!reporter_id(full_name)
+          profiles!reporter_id(full_name)
         `)
         .order('created_at', { ascending: false });
 
