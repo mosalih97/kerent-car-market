@@ -30,6 +30,7 @@ export const useCredits = () => {
       if (error) {
         console.error('Error fetching credits:', error);
       } else {
+        console.log('Credits fetched:', data.credits);
         setCredits(data.credits);
       }
     } catch (error) {
@@ -40,10 +41,15 @@ export const useCredits = () => {
   };
 
   const deductCredit = async (): Promise<boolean> => {
-    if (!user || credits < 1) return false;
+    if (!user || credits < 1) {
+      console.error('Cannot deduct credit: user not found or insufficient credits');
+      return false;
+    }
 
     try {
-      const { error } = await supabase.functions.invoke('deduct-credit', {
+      console.log('Attempting to deduct credit for user:', user.id);
+      
+      const { data, error } = await supabase.functions.invoke('deduct-credit', {
         body: { user_id: user.id }
       });
 
@@ -52,8 +58,16 @@ export const useCredits = () => {
         return false;
       }
 
-      setCredits(prev => prev - 1);
-      return true;
+      console.log('Credit deduction response:', data);
+      
+      if (data && data.success) {
+        console.log('Credit deducted successfully, new balance:', data.new_credits);
+        setCredits(data.new_credits);
+        return true;
+      } else {
+        console.error('Credit deduction failed:', data);
+        return false;
+      }
     } catch (error) {
       console.error('Error deducting credit:', error);
       return false;

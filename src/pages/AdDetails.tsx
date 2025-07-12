@@ -36,51 +36,81 @@ const AdDetails = () => {
   const fetchAd = async () => {
     if (!id) return;
 
-    const { data, error } = await supabase
-      .from('ads')
-      .select(`
-        *,
-        profiles!inner(*)
-      `)
-      .eq('id', id)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('ads')
+        .select(`
+          *,
+          profiles!inner(*)
+        `)
+        .eq('id', id)
+        .single();
 
-    if (error) {
-      console.error('Error fetching ad:', error);
-    } else {
-      setAd(data as Ad);
-      await trackView();
+      if (error) {
+        console.error('Error fetching ad:', error);
+        toast({
+          title: "خطأ",
+          description: "حدث خطأ في تحميل الإعلان",
+          variant: "destructive",
+        });
+      } else {
+        console.log('Ad fetched successfully:', data);
+        setAd(data as Ad);
+        await trackView();
+      }
+    } catch (error) {
+      console.error('Error in fetchAd:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ في تحميل الإعلان",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const checkIfContactRevealed = async () => {
     if (!user || !id) return;
 
-    const { data, error } = await supabase
-      .from('contact_reveals')
-      .select('id')
-      .eq('ad_id', id)
-      .eq('user_id', user.id)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('contact_reveals')
+        .select('id')
+        .eq('ad_id', id)
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-    if (!error && data) {
-      setShowContactInfo(true);
+      if (error) {
+        console.error('Error checking contact reveal:', error);
+        return;
+      }
+
+      if (data) {
+        console.log('Contact already revealed for this user');
+        setShowContactInfo(true);
+      }
+    } catch (error) {
+      console.error('Error in checkIfContactRevealed:', error);
     }
   };
 
   const trackView = async () => {
     if (!id) return;
 
-    const { error } = await supabase
-      .from('ad_views')
-      .insert({
-        ad_id: id,
-        viewer_id: user?.id || null
-      });
+    try {
+      const { error } = await supabase
+        .from('ad_views')
+        .insert({
+          ad_id: id,
+          viewer_id: user?.id || null
+        });
 
-    if (error && !error.message.includes('duplicate')) {
-      console.error('Error tracking view:', error);
+      if (error && !error.message.includes('duplicate')) {
+        console.error('Error tracking view:', error);
+      }
+    } catch (error) {
+      console.error('Error in trackView:', error);
     }
   };
 
@@ -104,9 +134,44 @@ const AdDetails = () => {
     }
 
     setIsRevealing(true);
+    console.log('Starting contact reveal process for user:', user.id, 'ad:', ad.id);
 
     try {
-      // أولاً نسجل الكشف عن معلومات الاتصال
+      // أولاً نتحقق من عدم وجود كشف سابق
+      const { data: existingReveal, error: checkError } = await supabase
+        .from('contact_reveals')
+        .select('id')
+        .eq('ad_id', ad.id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Error checking existing reveal:', checkError);
+        throw new Error('فشل في التحقق من الكشف السابق');
+      }
+
+      if (existingReveal) {
+        console.log('Contact already revealed, showing contact info');
+        setShowContactInfo(true);
+        toast({
+          title: "تم بنجاح",
+          description: "معلومات الاتصال متاحة بالفعل",
+        });
+        return;
+      }
+
+      // خصم الكريديت أولاً
+      console.log('Attempting to deduct credit...');
+      const creditDeducted = await deductCredit();
+      
+      if (!creditDeducted) {
+        console.error('Failed to deduct credit');
+        throw new Error('فشل في خصم الكريديت');
+      }
+
+      console.log('Credit deducted successfully, now recording contact reveal');
+
+      // سجل كشف معلومات الاتصال
       const { error: insertError } = await supabase
         .from('contact_reveals')
         .insert({
@@ -114,28 +179,26 @@ const AdDetails = () => {
           user_id: user.id
         });
 
-      if (insertError && !insertError.message.includes('duplicate')) {
-        throw insertError;
+      if (insertError) {
+        console.error('Error inserting contact reveal:', insertError);
+        // في حالة فشل تسجيل الكشف، نحاول إعادة الكريديت
+        await refreshCredits();
+        throw new Error('فشل في تسجيل كشف معلومات الاتصال');
       }
 
-      // ثم نخصم الكريديت
-      const success = await deductCredit();
-      
-      if (success) {
-        setShowContactInfo(true);
-        toast({
-          title: "تم بنجاح",
-          description: "تم عرض معلومات الاتصال",
-        });
-      } else {
-        throw new Error('فشل في خصم الكريديت');
-      }
+      console.log('Contact reveal recorded successfully');
+      setShowContactInfo(true);
+      toast({
+        title: "تم بنجاح",
+        description: "تم عرض معلومات الاتصال",
+      });
 
     } catch (error) {
-      console.error('Error revealing contact:', error);
+      console.error('Error in revealContact:', error);
+      const errorMessage = error instanceof Error ? error.message : 'حدث خطأ غير متوقع';
       toast({
         title: "خطأ",
-        description: "حدث خطأ في عرض معلومات الاتصال",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
