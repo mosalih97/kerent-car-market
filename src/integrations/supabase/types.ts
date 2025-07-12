@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_reports: {
+        Row: {
+          ad_id: string
+          created_at: string | null
+          description: string | null
+          id: string
+          reason: string
+          reporter_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+        }
+        Insert: {
+          ad_id: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          reason: string
+          reporter_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+        }
+        Update: {
+          ad_id?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          reason?: string
+          reporter_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_reports_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "ads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ad_views: {
         Row: {
           ad_id: string
@@ -67,6 +111,8 @@ export type Database = {
           model: string
           phone: string
           price: number
+          reported_count: number | null
+          status: string | null
           title: string
           updated_at: string
           user_id: string
@@ -89,6 +135,8 @@ export type Database = {
           model: string
           phone: string
           price: number
+          reported_count?: number | null
+          status?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -111,6 +159,8 @@ export type Database = {
           model?: string
           phone?: string
           price?: number
+          reported_count?: number | null
+          status?: string | null
           title?: string
           updated_at?: string
           user_id?: string
@@ -234,6 +284,30 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       users: {
         Row: {
           created_at: string | null
@@ -265,6 +339,17 @@ export type Database = {
         }
         Returns: number
       }
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
+      is_admin: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       reset_monthly_limits: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -272,6 +357,7 @@ export type Database = {
     }
     Enums: {
       ad_type: "standard" | "featured" | "premium"
+      app_role: "admin" | "moderator" | "user"
       car_condition: "new" | "used" | "excellent" | "good" | "fair"
       user_type: "free" | "premium"
     }
@@ -402,6 +488,7 @@ export const Constants = {
   public: {
     Enums: {
       ad_type: ["standard", "featured", "premium"],
+      app_role: ["admin", "moderator", "user"],
       car_condition: ["new", "used", "excellent", "good", "fair"],
       user_type: ["free", "premium"],
     },
