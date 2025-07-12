@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCreateAd } from "@/hooks/useAds";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { toast } from "sonner";
-import { X, Upload, Image as ImageIcon } from "lucide-react";
+import { X, Upload } from "lucide-react";
 
 interface CreateAdModalProps {
   open: boolean;
@@ -20,11 +20,11 @@ interface CreateAdModalProps {
 interface FormData {
   title: string;
   description: string;
-  price: number;
+  price: string;
   brand: string;
   model: string;
-  year: number;
-  mileage?: number;
+  year: string;
+  mileage?: string;
   condition: 'new' | 'used' | 'excellent' | 'good' | 'fair';
   city: string;
   phone: string;
@@ -65,18 +65,76 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
 
   const onSubmit = async (data: FormData) => {
     try {
+      console.log('Form data:', data);
+      
+      // Validate required fields
+      if (!data.title?.trim()) {
+        toast.error("عنوان الإعلان مطلوب");
+        return;
+      }
+      
+      if (!data.price || isNaN(Number(data.price)) || Number(data.price) <= 0) {
+        toast.error("يجب إدخال سعر صحيح");
+        return;
+      }
+      
+      if (!data.brand) {
+        toast.error("الماركة مطلوبة");
+        return;
+      }
+      
+      if (!data.model?.trim()) {
+        toast.error("الموديل مطلوب");
+        return;
+      }
+      
+      if (!data.year || isNaN(Number(data.year)) || Number(data.year) < 1990 || Number(data.year) > new Date().getFullYear() + 1) {
+        toast.error("يجب إدخال سنة صنع صحيحة");
+        return;
+      }
+      
+      if (!data.condition) {
+        toast.error("حالة السيارة مطلوبة");
+        return;
+      }
+      
+      if (!data.city) {
+        toast.error("المدينة مطلوبة");
+        return;
+      }
+      
+      if (!data.phone?.trim()) {
+        toast.error("رقم الهاتف مطلوب");
+        return;
+      }
+
       let imageUrls: string[] = [];
       
       if (selectedImages.length > 0) {
+        console.log('Uploading images...');
         const fileList = new DataTransfer();
         selectedImages.forEach(file => fileList.items.add(file));
         imageUrls = await uploadImages(fileList.files);
+        console.log('Images uploaded:', imageUrls);
       }
 
-      await createAdMutation.mutateAsync({
-        ...data,
+      const adData = {
+        title: data.title.trim(),
+        description: data.description?.trim() || "",
+        price: Number(data.price),
+        brand: data.brand,
+        model: data.model.trim(),
+        year: Number(data.year),
+        mileage: data.mileage ? Number(data.mileage) : undefined,
+        condition: data.condition,
+        city: data.city,
+        phone: data.phone.trim(),
         images: imageUrls,
-      });
+      };
+
+      console.log('Creating ad with data:', adData);
+      
+      await createAdMutation.mutateAsync(adData);
 
       toast.success("تم إنشاء الإعلان بنجاح!");
       
@@ -88,7 +146,11 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
       onOpenChange(false);
     } catch (error) {
       console.error('Error creating ad:', error);
-      toast.error("حدث خطأ أثناء إنشاء الإعلان");
+      if (error instanceof Error) {
+        toast.error(`خطأ: ${error.message}`);
+      } else {
+        toast.error("حدث خطأ أثناء إنشاء الإعلان. يرجى المحاولة مرة أخرى.");
+      }
     }
   };
 
@@ -167,10 +229,9 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
               <Label htmlFor="price">السعر (جنيه سوداني) *</Label>
               <Input
                 id="price"
-                type="number"
+                type="text"
                 {...register("price", { 
-                  required: "السعر مطلوب",
-                  min: { value: 1, message: "السعر يجب أن يكون أكبر من صفر" }
+                  required: "السعر مطلوب"
                 })}
                 placeholder="1000000"
               />
@@ -219,11 +280,9 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
               <Label htmlFor="year">سنة الصنع *</Label>
               <Input
                 id="year"
-                type="number"
+                type="text"
                 {...register("year", { 
-                  required: "سنة الصنع مطلوبة",
-                  min: { value: 1990, message: "السنة يجب أن تكون من 1990 أو أحدث" },
-                  max: { value: new Date().getFullYear() + 1, message: "السنة غير صحيحة" }
+                  required: "سنة الصنع مطلوبة"
                 })}
                 placeholder="2020"
               />
@@ -234,7 +293,7 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
               <Label htmlFor="mileage">المسافة المقطوعة (كم)</Label>
               <Input
                 id="mileage"
-                type="number"
+                type="text"
                 {...register("mileage")}
                 placeholder="100000"
               />
@@ -288,11 +347,7 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
               <Input
                 id="phone"
                 {...register("phone", { 
-                  required: "رقم الهاتف مطلوب",
-                  pattern: { 
-                    value: /^(\+249|0)?[19]\d{8}$/,
-                    message: "رقم الهاتف غير صحيح" 
-                  }
+                  required: "رقم الهاتف مطلوب"
                 })}
                 placeholder="+249123456789"
               />
