@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Search, Filter, MapPin, Calendar, Eye, Phone } from 'lucide-react';
+import { Search, Filter, MapPin, Calendar, Eye, Phone, MessageSquare, Bell, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -8,11 +8,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAds } from '@/hooks/useAds';
 import { useSearch } from '@/hooks/useSearch';
+import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
+import PremiumCard from '@/components/PremiumCard';
 
 const Index = () => {
   const { data: ads, isLoading } = useAds();
+  const { user } = useAuth();
   const { searchAds, clearSearch, isSearching, searchResults, hasSearched, searchError } = useSearch();
   
   // Local state for search form
@@ -139,6 +142,31 @@ const Index = () => {
           </div>
         </div>
 
+        {/* البطاقة الترويجية للخطة المميزة */}
+        <div className="mb-8">
+          <PremiumCard variant="home" />
+        </div>
+
+        {/* أزرار سريعة للمستخدمين المسجلين */}
+        {user && (
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Button className="bg-green-600 hover:bg-green-700 text-white">
+                <Plus className="w-4 h-4 ml-2" />
+                إضافة إعلان
+              </Button>
+              <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
+                <MessageSquare className="w-4 h-4 ml-2" />
+                الرسائل
+              </Button>
+              <Button variant="outline" className="border-purple-600 text-purple-600 hover:bg-purple-50">
+                <Bell className="w-4 h-4 ml-2" />
+                الإشعارات
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* عرض حالة البحث */}
         {hasSearched && (
           <div className="mb-6">
@@ -237,6 +265,11 @@ const Index = () => {
             <p className="text-red-600">حدث خطأ أثناء البحث. يرجى المحاولة مرة أخرى.</p>
           </div>
         )}
+
+        {/* البطاقة الترويجية في الفوتر */}
+        <div className="mt-16">
+          <PremiumCard variant="footer" />
+        </div>
       </main>
     </div>
   );
