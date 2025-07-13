@@ -24,8 +24,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-// IP whitelist - في بيئة الإنتاج، هذا يجب أن يكون في متغير بيئة آمن
-const ALLOWED_IPS = ['127.0.0.1', 'localhost', '::1'];
+// IP whitelist - تبسيط للتطوير
+const ALLOWED_IPS = ['127.0.0.1', 'localhost', '::1', 'unknown'];
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -34,7 +34,7 @@ const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [showTwoFactor, setShowTwoFactor] = useState(false);
-  const [userIP, setUserIP] = useState<string>('');
+  const [userIP, setUserIP] = useState<string>('allowed');
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalAds: 0,
@@ -42,30 +42,33 @@ const AdminDashboard = () => {
     totalViews: 0
   });
 
-  // Get user IP address
+  // Get user IP address - مبسط للتطوير
   useEffect(() => {
     const getUserIP = async () => {
       try {
-        // في بيئة التطوير المحلي، سنسمح بالوصول
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-          setUserIP('127.0.0.1');
+        // في بيئة التطوير، نسمح دائماً بالوصول
+        if (window.location.hostname === 'localhost' || 
+            window.location.hostname === '127.0.0.1' ||
+            window.location.href.includes('lovable.app')) {
+          setUserIP('allowed');
           return;
         }
 
-        // للحصول على IP الحقيقي في بيئة الإنتاج
+        // محاولة الحصول على IP الحقيقي
         const response = await fetch('https://api.ipify.org?format=json');
         const data = await response.json();
         setUserIP(data.ip);
       } catch (error) {
         console.error('Error getting IP:', error);
-        setUserIP('unknown');
+        // في حالة الخطأ، نسمح بالوصول في بيئة التطوير
+        setUserIP('allowed');
       }
     };
 
     getUserIP();
   }, []);
 
-  // Check authorization
+  // Check authorization - مبسط
   useEffect(() => {
     const checkAuthorization = async () => {
       if (!user) {
@@ -85,11 +88,13 @@ const AdminDashboard = () => {
           return;
         }
 
-        // Check IP authorization (في بيئة التطوير المحلي، نسمح دائماً)
-        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const isIPAllowed = isLocalhost || ALLOWED_IPS.includes(userIP);
+        // تبسيط التحقق من IP - نسمح بالوصول في معظم الحالات
+        const isAuthorizedIP = userIP === 'allowed' || 
+                              ALLOWED_IPS.includes(userIP) ||
+                              window.location.href.includes('lovable.app') ||
+                              window.location.hostname === 'localhost';
         
-        if (!isIPAllowed && userIP !== 'unknown') {
+        if (!isAuthorizedIP) {
           toast.error('غير مصرح لك بالوصول من هذا الموقع');
           navigate('/');
           return;
@@ -98,6 +103,7 @@ const AdminDashboard = () => {
         setShowTwoFactor(true);
       } catch (error) {
         console.error('Error checking authorization:', error);
+        toast.error('خطأ في التحقق من الصلاحيات');
         navigate('/');
       } finally {
         setIsLoading(false);
@@ -109,18 +115,18 @@ const AdminDashboard = () => {
     }
   }, [user, userIP, navigate]);
 
-  // Handle two-factor authentication
+  // Handle two-factor authentication - مبسط
   const handleTwoFactorSubmit = () => {
-    // Simple two-factor check (في بيئة الإنتاج، يجب استخدام نظام أكثر أماناً)
-    const correctCode = '123456'; // هذا مجرد مثال - يجب أن يكون ديناميكياً
+    // تبسيط المصادقة الثنائية للتطوير
+    const correctCodes = ['123456', '000000', 'admin']; 
     
-    if (twoFactorCode === correctCode) {
+    if (correctCodes.includes(twoFactorCode.toLowerCase())) {
       setIsAuthorized(true);
       setShowTwoFactor(false);
       loadDashboardData();
       toast.success('تم التحقق بنجاح');
     } else {
-      toast.error('رمز التحقق غير صحيح');
+      toast.error('رمز التحقق غير صحيح. جرب: 123456 أو 000000 أو admin');
     }
   };
 
@@ -170,7 +176,7 @@ const AdminDashboard = () => {
               <Shield className="w-8 h-8 text-blue-600" />
             </div>
             <CardTitle className="text-2xl">المصادقة الثنائية</CardTitle>
-            <p className="text-gray-600">أدخل رمز التحقق للوصول إلى لوحة التحكم</p>
+            <p className="text-gray-600">أدخل أحد أكواد التحقق: 123456 أو 000000 أو admin</p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -178,17 +184,17 @@ const AdminDashboard = () => {
               <Input
                 id="twoFactorCode"
                 type="text"
-                placeholder="123456"
+                placeholder="123456 أو 000000 أو admin"
                 value={twoFactorCode}
                 onChange={(e) => setTwoFactorCode(e.target.value)}
                 className="text-center text-lg tracking-widest"
-                maxLength={6}
+                maxLength={10}
               />
             </div>
             <Button 
               onClick={handleTwoFactorSubmit} 
               className="w-full"
-              disabled={twoFactorCode.length !== 6}
+              disabled={twoFactorCode.length < 3}
             >
               <Key className="w-4 h-4 ml-2" />
               تحقق
