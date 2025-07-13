@@ -101,46 +101,6 @@ export const useCreateAd = () => {
   });
 };
 
-export const useUpdateAd = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (adData: {
-      id: string;
-      title: string;
-      description: string;
-      price: number;
-      brand: string;
-      model: string;
-      year: number;
-      mileage?: number;
-      condition: 'new' | 'used' | 'excellent' | 'good' | 'fair';
-      city: string;
-      phone: string;
-    }) => {
-      const { id, ...updateData } = adData;
-      
-      const { data, error } = await supabase
-        .from('ads')
-        .update({
-          ...updateData,
-          condition: updateData.condition as Database['public']['Enums']['car_condition'],
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ads'] });
-      queryClient.invalidateQueries({ queryKey: ['myAds'] });
-    },
-  });
-};
-
 export const useDeleteAd = () => {
   const queryClient = useQueryClient();
 

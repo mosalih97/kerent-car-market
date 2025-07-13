@@ -11,7 +11,6 @@ import { useAds } from "@/hooks/useAds";
 import { useSearch } from "@/hooks/useSearch";
 import CreateAdModal from "@/components/CreateAdModal";
 import PremiumCard from "@/components/PremiumCard";
-import WhatsAppButton from "@/components/WhatsAppButton";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -57,11 +56,7 @@ const Index = () => {
   };
 
   const formatPrice = (price: number) => {
-    const priceInMillions = price / 1000000;
-    return `${new Intl.NumberFormat('ar-SD', { 
-      minimumFractionDigits: priceInMillions < 1 ? 2 : 1,
-      maximumFractionDigits: 2 
-    }).format(priceInMillions)} مليون جنيه سوداني`;
+    return new Intl.NumberFormat('ar-SD').format(price);
   };
 
   const formatDate = (dateString: string) => {
@@ -88,7 +83,7 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-8">
               <div className="flex items-center gap-3">
-                <div className="w-32 h-32 border-2 border-amber-500 bg-transparent rounded-lg p-4 flex items-center justify-center">
+                <div className="w-24 h-24 border-2 border-amber-500 bg-transparent rounded-lg p-3 flex items-center justify-center">
                   <img 
                     src="/lovable-uploads/6e1da3af-20f1-469a-8fb3-547fa3c534ac.png" 
                     alt="الكرين" 
@@ -106,6 +101,7 @@ const Index = () => {
                 <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">عنا</a>
               </nav>
             </div>
+            
             
             <div className="flex items-center gap-3">
               {user ? (
@@ -394,7 +390,8 @@ const Index = () => {
                         {ad.title}
                       </h4>
                       <div className="text-left">
-                        <p className="text-lg font-bold text-green-600">{formatPrice(ad.price)}</p>
+                        <p className="text-2xl font-bold text-green-600">{formatPrice(ad.price)}</p>
+                        <p className="text-sm text-gray-500">جنيه سوداني</p>
                       </div>
                     </div>
 
@@ -412,7 +409,7 @@ const Index = () => {
                       </div>
                       <div className="bg-gray-50 p-3 rounded-lg">
                         <p className="text-gray-500 mb-1">المسافة</p>
-                        <p className="font-semibold text-gray-800">{ad.mileage ? `${new Intl.NumberFormat('ar-SD').format(ad.mileage)} كم` : 'غير محدد'}</p>
+                        <p className="font-semibold text-gray-800">{ad.mileage ? `${formatPrice(ad.mileage)} كم` : 'غير محدد'}</p>
                       </div>
                       <div className="bg-gray-50 p-3 rounded-lg">
                         <p className="text-gray-500 mb-1">الحالة</p>
@@ -511,10 +508,10 @@ const Index = () => {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-24 h-24 border-2 border-amber-500 bg-transparent rounded-lg p-3 flex items-center justify-center">
+                <div className="w-16 h-16 border-2 border-amber-500 bg-transparent rounded-lg p-2 flex items-center justify-center">
                   <img 
                     src="/lovable-uploads/6e1da3af-20f1-469a-8fb3-547fa3c534ac.png" 
                     alt="الكرين" 
@@ -526,6 +523,24 @@ const Index = () => {
               <p className="text-gray-400 mb-4">
                 موقع السيارات الأول في السودان. نساعدك في العثور على السيارة المثالية.
               </p>
+            </div>
+            <div>
+              <h6 className="font-semibold mb-4">روابط سريعة</h6>
+              <ul className="space-y-2 text-gray-400">
+                <li><a href="#" className="hover:text-white transition-colors">عن الموقع</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">شروط الاستخدام</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">سياسة الخصوصية</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">اتصل بنا</a></li>
+              </ul>
+            </div>
+            <div>
+              <h6 className="font-semibold mb-4">للبائعين</h6>
+              <ul className="space-y-2 text-gray-400">
+                <li><a href="#" className="hover:text-white transition-colors">إضافة إعلان</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">الأسعار</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">نصائح البيع</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">دليل البائع</a></li>
+              </ul>
             </div>
             <div>
               <h6 className="font-semibold mb-4">تواصل معنا</h6>
@@ -548,7 +563,6 @@ const Index = () => {
         </div>
       </footer>
 
-      <WhatsAppButton phoneNumber="+249966960202" />
       <CreateAdModal open={showCreateModal} onOpenChange={setShowCreateModal} />
     </div>
   );
