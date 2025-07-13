@@ -331,6 +331,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_toggle_ad_status: {
+        Args: { _admin_id: string; _ad_id: string; _is_active: boolean }
+        Returns: boolean
+      }
+      admin_update_report_status: {
+        Args: { _admin_id: string; _report_id: string; _status: string }
+        Returns: boolean
+      }
+      admin_update_user_type: {
+        Args: {
+          _admin_id: string
+          _target_user_id: string
+          _user_type: Database["public"]["Enums"]["user_type"]
+        }
+        Returns: boolean
+      }
       get_ad_priority: {
         Args: {
           ad_type: Database["public"]["Enums"]["ad_type"]
@@ -353,6 +369,10 @@ export type Database = {
       reset_monthly_limits: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      verify_admin_access: {
+        Args: { _user_id: string }
+        Returns: boolean
       }
     }
     Enums: {

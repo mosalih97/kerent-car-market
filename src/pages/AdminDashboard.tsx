@@ -57,17 +57,25 @@ export default function AdminDashboard() {
     }
 
     try {
+      // Use the new secure admin verification function
       const { data, error } = await supabase
-        .rpc('has_role', { _user_id: user.id, _role: 'admin' });
+        .rpc('verify_admin_access', { _user_id: user.id });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Admin verification error:', error);
+        throw error;
+      }
       
-      setIsAdmin(data);
+      setIsAdmin(data || false);
       if (data) {
         await loadDashboardData();
+        toast.success('مرحباً بك في لوحة التحكم');
+      } else {
+        toast.error('ليس لديك صلاحية الوصول لهذه الصفحة');
       }
     } catch (error) {
       console.error('Error checking admin status:', error);
+      setIsAdmin(false);
       toast.error('خطأ في التحقق من صلاحيات المدير');
     } finally {
       setLoading(false);
@@ -113,57 +121,98 @@ export default function AdminDashboard() {
   };
 
   const updateUserType = async (userId: string, userType: 'free' | 'premium') => {
+    if (!user) {
+      toast.error('يجب تسجيل الدخول أولاً');
+      return;
+    }
+
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ user_type: userType, is_premium: userType === 'premium' })
-        .eq('id', userId);
+      const { data, error } = await supabase
+        .rpc('admin_update_user_type', {
+          _admin_id: user.id,
+          _target_user_id: userId,
+          _user_type: userType
+        });
 
       if (error) throw error;
 
-      toast.success(`تم تحديث نوع العضوية إلى ${userType === 'premium' ? 'مميزة' : 'مجانية'}`);
-      await loadDashboardData();
-    } catch (error) {
+      if (data) {
+        toast.success(`تم تحديث نوع العضوية إلى ${userType === 'premium' ? 'مميزة' : 'مجانية'}`);
+        await loadDashboardData();
+      } else {
+        toast.error('فشل في تحديث نوع العضوية');
+      }
+    } catch (error: any) {
       console.error('Error updating user type:', error);
-      toast.error('خطأ في تحديث نوع العضوية');
+      if (error.message?.includes('Access denied')) {
+        toast.error('ليس لديك صلاحية لتنفيذ هذا الإجراء');
+      } else {
+        toast.error('خطأ في تحديث نوع العضوية');
+      }
     }
   };
 
   const toggleAdStatus = async (adId: string, isActive: boolean) => {
+    if (!user) {
+      toast.error('يجب تسجيل الدخول أولاً');
+      return;
+    }
+
     try {
-      const { error } = await supabase
-        .from('ads')
-        .update({ is_active: !isActive })
-        .eq('id', adId);
+      const { data, error } = await supabase
+        .rpc('admin_toggle_ad_status', {
+          _admin_id: user.id,
+          _ad_id: adId,
+          _is_active: !isActive
+        });
 
       if (error) throw error;
 
-      toast.success(`تم ${!isActive ? 'تفعيل' : 'إلغاء تفعيل'} الإعلان`);
-      await loadDashboardData();
-    } catch (error) {
+      if (data) {
+        toast.success(`تم ${!isActive ? 'تفعيل' : 'إلغاء تفعيل'} الإعلان`);
+        await loadDashboardData();
+      } else {
+        toast.error('فشل في تغيير حالة الإعلان');
+      }
+    } catch (error: any) {
       console.error('Error toggling ad status:', error);
-      toast.error('خطأ في تغيير حالة الإعلان');
+      if (error.message?.includes('Access denied')) {
+        toast.error('ليس لديك صلاحية لتنفيذ هذا الإجراء');
+      } else {
+        toast.error('خطأ في تغيير حالة الإعلان');
+      }
     }
   };
 
   const updateReportStatus = async (reportId: string, status: 'approved' | 'rejected') => {
+    if (!user) {
+      toast.error('يجب تسجيل الدخول أولاً');
+      return;
+    }
+
     try {
-      const { error } = await supabase
-        .from('ad_reports')
-        .update({ 
-          status, 
-          reviewed_at: new Date().toISOString(),
-          reviewed_by: user?.id 
-        })
-        .eq('id', reportId);
+      const { data, error } = await supabase
+        .rpc('admin_update_report_status', {
+          _admin_id: user.id,
+          _report_id: reportId,
+          _status: status
+        });
 
       if (error) throw error;
 
-      toast.success(`تم ${status === 'approved' ? 'قبول' : 'رفض'} البلاغ`);
-      await loadDashboardData();
-    } catch (error) {
+      if (data) {
+        toast.success(`تم ${status === 'approved' ? 'قبول' : 'رفض'} البلاغ`);
+        await loadDashboardData();
+      } else {
+        toast.error('فشل في تحديث حالة البلاغ');
+      }
+    } catch (error: any) {
       console.error('Error updating report status:', error);
-      toast.error('خطأ في تحديث حالة البلاغ');
+      if (error.message?.includes('Access denied')) {
+        toast.error('ليس لديك صلاحية لتنفيذ هذا الإجراء');
+      } else {
+        toast.error('خطأ في تحديث حالة البلاغ');
+      }
     }
   };
 
