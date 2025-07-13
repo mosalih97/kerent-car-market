@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, MapPin, Car, DollarSign, Filter, Star, Eye, MessageCircle, Plus, Bell, User } from "lucide-react";
@@ -83,11 +84,11 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-8">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-1 flex items-center justify-center overflow-hidden">
+                <div className="w-12 h-12 bg-white rounded-lg p-2 flex items-center justify-center overflow-hidden shadow-md border border-gray-200">
                   <img 
                     src="/lovable-uploads/984f40fa-0c6f-4a03-a482-7f2ab4226f5f.png" 
                     alt="الكرين" 
-                    className="w-full h-full object-contain filter brightness-0 invert"
+                    className="w-full h-full object-contain"
                   />
                 </div>
                 <div>
@@ -222,12 +223,33 @@ const Index = () => {
                     <Car className="w-4 h-4 text-blue-600" />
                     العلامة التجارية
                   </label>
-                  <Input 
-                    placeholder="اكتب اسم العلامة التجارية" 
-                    className="h-12 text-right"
-                    value={searchFilters.brand}
-                    onChange={(e) => setSearchFilters(prev => ({ ...prev, brand: e.target.value }))}
-                  />
+                  <Select onValueChange={(value) => setSearchFilters(prev => ({ ...prev, brand: value }))}>
+                    <SelectTrigger className="h-12 text-right">
+                      <SelectValue placeholder="اختر العلامة التجارية" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="تويوتا">تويوتا (Toyota)</SelectItem>
+                      <SelectItem value="نيسان">نيسان (Nissan)</SelectItem>
+                      <SelectItem value="هيونداي">هيونداي (Hyundai)</SelectItem>
+                      <SelectItem value="كيا">كيا (Kia)</SelectItem>
+                      <SelectItem value="ميتسوبيشي">ميتسوبيشي (Mitsubishi)</SelectItem>
+                      <SelectItem value="هوندا">هوندا (Honda)</SelectItem>
+                      <SelectItem value="سوزوكي">سوزوكي (Suzuki)</SelectItem>
+                      <SelectItem value="شيفروليه">شيفروليه (Chevrolet)</SelectItem>
+                      <SelectItem value="فورد">فورد (Ford)</SelectItem>
+                      <SelectItem value="مرسيدس بنز">مرسيدس بنز (Mercedes-Benz)</SelectItem>
+                      <SelectItem value="بي إم دبليو">بي إم دبليو (BMW)</SelectItem>
+                      <SelectItem value="جيب">جيب (Jeep)</SelectItem>
+                      <SelectItem value="لاند روفر">لاند روفر (Land Rover)</SelectItem>
+                      <SelectItem value="دايهاتسو">دايهاتسو (Daihatsu)</SelectItem>
+                      <SelectItem value="جيلي">جيلي (Geely)</SelectItem>
+                      <SelectItem value="شيري">شيري (Chery)</SelectItem>
+                      <SelectItem value="هافال">هافال (Haval)</SelectItem>
+                      <SelectItem value="فوتون">فوتون (Foton)</SelectItem>
+                      <SelectItem value="بايك">بايك (BAIC)</SelectItem>
+                      <SelectItem value="ايسوزو">ايسوزو (Isuzu)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
@@ -489,11 +511,11 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-1 flex items-center justify-center overflow-hidden">
+                <div className="w-10 h-10 bg-white rounded-lg p-2 flex items-center justify-center overflow-hidden">
                   <img 
                     src="/lovable-uploads/984f40fa-0c6f-4a03-a482-7f2ab4226f5f.png" 
                     alt="الكرين" 
-                    className="w-full h-full object-contain filter brightness-0 invert"
+                    className="w-full h-full object-contain"
                   />
                 </div>
                 <h5 className="text-xl font-bold">الكرين</h5>
