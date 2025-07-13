@@ -6,12 +6,9 @@ import {
   Car, 
   AlertTriangle, 
   BarChart3, 
-  Settings, 
   Eye,
-  MessageSquare,
   TrendingUp,
   RefreshCw,
-  Smartphone,
   Key
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,9 +21,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-// IP whitelist - تبسيط للتطوير
-const ALLOWED_IPS = ['127.0.0.1', 'localhost', '::1', 'unknown'];
-
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
@@ -34,7 +28,6 @@ const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [showTwoFactor, setShowTwoFactor] = useState(false);
-  const [userIP, setUserIP] = useState<string>('allowed');
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalAds: 0,
@@ -42,45 +35,30 @@ const AdminDashboard = () => {
     totalViews: 0
   });
 
-  // Get user IP address - مبسط للتطوير
+  // تحقق مبسط من الصلاحيات
   useEffect(() => {
-    const getUserIP = async () => {
+    const checkAuthorization = async () => {
       try {
-        // في بيئة التطوير، نسمح دائماً بالوصول
-        if (window.location.hostname === 'localhost' || 
-            window.location.hostname === '127.0.0.1' ||
-            window.location.href.includes('lovable.app')) {
-          setUserIP('allowed');
+        if (!user) {
+          navigate('/auth');
           return;
         }
 
-        // محاولة الحصول على IP الحقيقي
-        const response = await fetch('https://api.ipify.org?format=json');
-        const data = await response.json();
-        setUserIP(data.ip);
-      } catch (error) {
-        console.error('Error getting IP:', error);
-        // في حالة الخطأ، نسمح بالوصول في بيئة التطوير
-        setUserIP('allowed');
-      }
-    };
+        console.log('Checking admin status for user:', user.id);
 
-    getUserIP();
-  }, []);
-
-  // Check authorization - مبسط
-  useEffect(() => {
-    const checkAuthorization = async () => {
-      if (!user) {
-        navigate('/auth');
-        return;
-      }
-
-      try {
-        // Check if user is admin
-        const { data: isAdminResult } = await supabase.rpc('is_admin', {
+        // التحقق من كون المستخدم مدير
+        const { data: isAdminResult, error } = await supabase.rpc('is_admin', {
           _user_id: user.id
         });
+
+        console.log('Admin check result:', isAdminResult, 'Error:', error);
+
+        if (error) {
+          console.error('Error checking admin status:', error);
+          toast.error('خطأ في التحقق من الصلاحيات');
+          navigate('/');
+          return;
+        }
 
         if (!isAdminResult) {
           toast.error('ليس لديك صلاحية للوصول إلى لوحة التحكم');
@@ -88,36 +66,22 @@ const AdminDashboard = () => {
           return;
         }
 
-        // تبسيط التحقق من IP - نسمح بالوصول في معظم الحالات
-        const isAuthorizedIP = userIP === 'allowed' || 
-                              ALLOWED_IPS.includes(userIP) ||
-                              window.location.href.includes('lovable.app') ||
-                              window.location.hostname === 'localhost';
-        
-        if (!isAuthorizedIP) {
-          toast.error('غير مصرح لك بالوصول من هذا الموقع');
-          navigate('/');
-          return;
-        }
-
+        // إذا كان المستخدم مدير، اعرض المصادقة الثنائية
         setShowTwoFactor(true);
+        setIsLoading(false);
+
       } catch (error) {
-        console.error('Error checking authorization:', error);
+        console.error('Error in authorization check:', error);
         toast.error('خطأ في التحقق من الصلاحيات');
         navigate('/');
-      } finally {
-        setIsLoading(false);
       }
     };
 
-    if (userIP) {
-      checkAuthorization();
-    }
-  }, [user, userIP, navigate]);
+    checkAuthorization();
+  }, [user, navigate]);
 
-  // Handle two-factor authentication - مبسط
+  // التعامل مع المصادقة الثنائية
   const handleTwoFactorSubmit = () => {
-    // تبسيط المصادقة الثنائية للتطوير
     const correctCodes = ['123456', '000000', 'admin']; 
     
     if (correctCodes.includes(twoFactorCode.toLowerCase())) {
@@ -130,7 +94,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // Load dashboard statistics
+  // تحميل بيانات لوحة التحكم
   const loadDashboardData = async () => {
     try {
       const [usersResult, adsResult, reportsResult, viewsResult] = await Promise.all([
@@ -148,6 +112,7 @@ const AdminDashboard = () => {
       });
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+      toast.error('خطأ في تحميل البيانات');
     }
   };
 
@@ -156,18 +121,20 @@ const AdminDashboard = () => {
     navigate('/');
   };
 
+  // شاشة التحميل
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center" dir="rtl">
         <div className="text-center">
-          <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4" />
-          <p>جارٍ التحقق من الصلاحيات...</p>
+          <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
+          <p className="text-gray-600">جارٍ التحقق من الصلاحيات...</p>
         </div>
       </div>
     );
   }
 
-  if (showTwoFactor) {
+  // شاشة المصادقة الثنائية
+  if (showTwoFactor && !isAuthorized) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center" dir="rtl">
         <Card className="w-full max-w-md">
@@ -210,8 +177,18 @@ const AdminDashboard = () => {
     );
   }
 
+  // لوحة التحكم الرئيسية
   if (!isAuthorized) {
-    return null;
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center" dir="rtl">
+        <div className="text-center">
+          <Shield className="w-16 h-16 mx-auto mb-4 text-red-500" />
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">غير مصرح</h2>
+          <p className="text-gray-600 mb-4">ليس لديك صلاحية للوصول إلى هذه الصفحة</p>
+          <Button onClick={() => navigate('/')}>العودة إلى الرئيسية</Button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -224,7 +201,7 @@ const AdminDashboard = () => {
               <Shield className="w-8 h-8 text-blue-600" />
               <div>
                 <h1 className="text-2xl font-bold text-gray-800">لوحة تحكم المدير</h1>
-                <p className="text-sm text-gray-600">IP: {userIP}</p>
+                <p className="text-sm text-gray-600">إدارة المنصة</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
