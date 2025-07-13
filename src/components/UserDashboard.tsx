@@ -8,6 +8,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMyAds, useDeleteAd } from '@/hooks/useAds';
 import { useCredits } from '@/hooks/useCredits';
 import CreateAdModal from './CreateAdModal';
+import EditAdModal from './EditAdModal';
+import MessagingSystem from './MessagingSystem';
+import NotificationSystem from './NotificationSystem';
 import PremiumCard from './PremiumCard';
 
 const UserDashboard = () => {
@@ -16,9 +19,14 @@ const UserDashboard = () => {
   const { credits, loading: creditsLoading } = useCredits();
   const deleteAdMutation = useDeleteAd();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingAd, setEditingAd] = useState<any>(null);
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('ar-SD').format(price);
+    const priceInMillions = price / 1000000;
+    return `${new Intl.NumberFormat('ar-SD', { 
+      minimumFractionDigits: priceInMillions < 1 ? 2 : 1,
+      maximumFractionDigits: 2 
+    }).format(priceInMillions)} مليون جنيه سوداني`;
   };
 
   const formatDate = (dateString: string) => {
@@ -30,6 +38,10 @@ const UserDashboard = () => {
     if (window.confirm('هل تريد حذف هذا الإعلان؟')) {
       deleteAdMutation.mutate(adId);
     }
+  };
+
+  const handleEditAd = (ad: any) => {
+    setEditingAd(ad);
   };
 
   return (
@@ -131,15 +143,20 @@ const UserDashboard = () => {
                       <h3 className="font-semibold text-lg mb-2 group-hover:text-blue-600 transition-colors">
                         {ad.title}
                       </h3>
-                      <p className="text-2xl font-bold text-green-600 mb-2">
-                        {formatPrice(ad.price)} جنيه
+                      <p className="text-lg font-bold text-green-600 mb-2">
+                        {formatPrice(ad.price)}
                       </p>
                       <p className="text-sm text-gray-600 mb-4">
                         تم النشر في {formatDate(ad.created_at)}
                       </p>
                       
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline" className="flex-1">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="flex-1"
+                          onClick={() => handleEditAd(ad)}
+                        >
                           <Edit className="w-4 h-4 ml-2" />
                           تعديل
                         </Button>
@@ -183,31 +200,15 @@ const UserDashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12">
-                  <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-600 mb-2">لا توجد رسائل</h3>
-                  <p className="text-gray-500">ستظهر رسائلك هنا</p>
-                </div>
+                <MessagingSystem />
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="notifications" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bell className="w-5 h-5" />
-                  الإشعارات
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <Bell className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-600 mb-2">لا توجد إشعارات</h3>
-                  <p className="text-gray-500">ستظهر إشعاراتك هنا</p>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="flex justify-center">
+              <NotificationSystem />
+            </div>
           </TabsContent>
 
           <TabsContent value="profile" className="space-y-6">
@@ -295,6 +296,11 @@ const UserDashboard = () => {
       </div>
 
       <CreateAdModal open={showCreateModal} onOpenChange={setShowCreateModal} />
+      <EditAdModal 
+        ad={editingAd} 
+        open={!!editingAd} 
+        onOpenChange={(open) => !open && setEditingAd(null)} 
+      />
     </div>
   );
 };
