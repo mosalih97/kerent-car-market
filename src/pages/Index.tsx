@@ -87,7 +87,7 @@ const Index = () => {
                   <Car className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-blue-800">الكيرين</h1>
+                  <h1 className="text-2xl font-bold text-blue-800">الكرين</h1>
                   <p className="text-xs text-blue-600">موقع السيارات الأول في السودان</p>
                 </div>
               </div>
@@ -487,7 +487,7 @@ const Index = () => {
                 <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg flex items-center justify-center">
                   <Car className="w-6 h-6 text-white" />
                 </div>
-                <h5 className="text-xl font-bold">الكيرين</h5>
+                <h5 className="text-xl font-bold">الكرين</h5>
               </div>
               <p className="text-gray-400 mb-4">
                 موقع السيارات الأول في السودان. نساعدك في العثور على السيارة المثالية.
@@ -515,7 +515,7 @@ const Index = () => {
               <h6 className="font-semibold mb-4">تواصل معنا</h6>
               <ul className="space-y-2 text-gray-400">
                 <li>هاتف: +249 123 456 789</li>
-                <li>بريد: info@alkeren.com</li>
+                <li>بريد: info@alkareen.com</li>
                 <li>العنوان: الخرطوم، السودان</li>
               </ul>
             </div>
@@ -527,7 +527,7 @@ const Index = () => {
           </div>
           
           <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 الكيرين. جميع الحقوق محفوظة.</p>
+            <p>&copy; 2024 الكرين. جميع الحقوق محفوظة.</p>
           </div>
         </div>
       </footer>
