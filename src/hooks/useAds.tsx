@@ -70,6 +70,16 @@ export const useCreateAd = () => {
     }) => {
       if (!user) throw new Error('يجب تسجيل الدخول لإنشاء إعلان');
 
+      // فحص حدود الإعلانات قبل الإنشاء
+      const { data: canCreateAd, error: limitError } = await supabase.rpc('check_ad_limit', {
+        _user_id: user.id
+      });
+
+      if (limitError) throw limitError;
+      if (!canCreateAd) {
+        throw new Error('لقد وصلت للحد الأقصى من الإعلانات المسموحة هذا الشهر (5 إعلانات). يمكنك ترقية حسابك للحصول على إعلانات غير محدودة.');
+      }
+
       const adInsert: AdInsert = {
         user_id: user.id,
         title: adData.title,
@@ -97,6 +107,8 @@ export const useCreateAd = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ads'] });
       queryClient.invalidateQueries({ queryKey: ['myAds'] });
+      queryClient.invalidateQueries({ queryKey: ['adLimits'] });
+      queryClient.invalidateQueries({ queryKey: ['checkAdLimit'] });
     },
   });
 };

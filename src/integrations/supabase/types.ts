@@ -258,6 +258,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_ad_limits: {
+        Row: {
+          ads_count: number
+          created_at: string
+          last_reset: string
+          max_ads: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ads_count?: number
+          created_at?: string
+          last_reset?: string
+          max_ads?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ads_count?: number
+          created_at?: string
+          last_reset?: string
+          max_ads?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_credits: {
         Row: {
           credits_remaining: number | null
@@ -347,6 +374,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      check_ad_limit: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       get_ad_priority: {
         Args: {
           ad_type: Database["public"]["Enums"]["ad_type"]
@@ -361,6 +392,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
         }
         Returns: boolean
+      }
+      increment_ad_count: {
+        Args: { _user_id: string }
+        Returns: undefined
       }
       is_admin: {
         Args: { _user_id: string }

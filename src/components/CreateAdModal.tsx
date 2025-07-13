@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCreateAd } from "@/hooks/useAds";
 import { useImageUpload } from "@/hooks/useImageUpload";
+import { useAdLimits, useCheckAdLimit } from "@/hooks/useAdLimits";
 import { toast } from "sonner";
-import { X, Upload } from "lucide-react";
+import { X, Upload, AlertCircle, Star } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface CreateAdModalProps {
   open: boolean;
@@ -39,6 +41,8 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
   const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<FormData>();
   const createAdMutation = useCreateAd();
   const { uploadImages, uploading } = useImageUpload();
+  const { data: adLimits } = useAdLimits();
+  const { data: canCreateAd } = useCheckAdLimit();
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -167,6 +171,30 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center">إضافة إعلان جديد</DialogTitle>
         </DialogHeader>
+
+        {/* عرض حدود الإعلانات */}
+        {adLimits && (
+          <Alert className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="text-right">
+              {canCreateAd ? (
+                <span className="text-green-600 font-medium">
+                  يمكنك إضافة {adLimits.max_ads - adLimits.ads_count} إعلان إضافي هذا الشهر
+                  ({adLimits.ads_count}/{adLimits.max_ads} مستخدم)
+                </span>
+              ) : (
+                <span className="text-red-600 font-medium">
+                  لقد وصلت للحد الأقصى من الإعلانات هذا الشهر ({adLimits.max_ads} إعلانات).
+                  <br />
+                  <span className="text-blue-600 hover:underline cursor-pointer inline-flex items-center gap-1">
+                    <Star className="w-4 h-4" />
+                    ترقية الحساب للحصول على إعلانات غير محدودة
+                  </span>
+                </span>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Images Upload */}
@@ -419,7 +447,7 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
           <Button 
             type="submit" 
             className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 py-3 text-lg"
-            disabled={createAdMutation.isPending || uploading}
+            disabled={createAdMutation.isPending || uploading || !canCreateAd}
           >
             {createAdMutation.isPending || uploading ? (
               <div className="flex items-center gap-2">

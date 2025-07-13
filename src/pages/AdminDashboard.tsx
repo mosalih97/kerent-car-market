@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { useAdminUpdateUserType, useAdminToggleAdStatus, useAdminUpdateReportStatus } from '@/hooks/useAdminActions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +22,8 @@ import {
   CheckCircle,
   XCircle,
   Search,
-  Filter
+  Filter,
+  Zap
 } from 'lucide-react';
 import { Tables } from '@/integrations/supabase/types';
 
@@ -31,6 +33,9 @@ type Report = Tables<'ad_reports'>;
 
 export default function AdminDashboard() {
   const { user } = useAuth();
+  const updateUserTypeMutation = useAdminUpdateUserType();
+  const toggleAdStatusMutation = useAdminToggleAdStatus();
+  const updateReportStatusMutation = useAdminUpdateReportStatus();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -381,11 +386,14 @@ export default function AdminDashboard() {
                         <Button
                           size="sm"
                           variant={profile.user_type === 'premium' ? 'outline' : 'default'}
-                          onClick={() => updateUserType(
-                            profile.id, 
-                            profile.user_type === 'premium' ? 'free' : 'premium'
-                          )}
+                          onClick={() => updateUserTypeMutation.mutate({
+                            targetUserId: profile.id, 
+                            userType: profile.user_type === 'premium' ? 'free' : 'premium'
+                          })}
+                          disabled={updateUserTypeMutation.isPending}
+                          className={profile.user_type === 'premium' ? '' : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700'}
                         >
+                          <Zap className="w-3 h-3 ml-1" />
                           {profile.user_type === 'premium' ? 'تحويل لمجاني' : 'ترقية لمميز'}
                         </Button>
                       </div>
@@ -432,7 +440,11 @@ export default function AdminDashboard() {
                         <Button
                           size="sm"
                           variant={ad.is_active ? 'destructive' : 'default'}
-                          onClick={() => toggleAdStatus(ad.id, ad.is_active)}
+                          onClick={() => toggleAdStatusMutation.mutate({
+                            adId: ad.id, 
+                            isActive: !ad.is_active
+                          })}
+                          disabled={toggleAdStatusMutation.isPending}
                         >
                           {ad.is_active ? (
                             <XCircle className="w-4 h-4 mr-1" />
@@ -482,14 +494,22 @@ export default function AdminDashboard() {
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() => updateReportStatus(report.id, 'approved')}
+                            onClick={() => updateReportStatusMutation.mutate({
+                              reportId: report.id, 
+                              status: 'approved'
+                            })}
+                            disabled={updateReportStatusMutation.isPending}
                           >
                             قبول البلاغ
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => updateReportStatus(report.id, 'rejected')}
+                            onClick={() => updateReportStatusMutation.mutate({
+                              reportId: report.id, 
+                              status: 'rejected'
+                            })}
+                            disabled={updateReportStatusMutation.isPending}
                           >
                             رفض البلاغ
                           </Button>
