@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, MapPin, Car, DollarSign, Filter, Star, Eye, MessageCircle, Plus, Bell, User } from "lucide-react";
@@ -84,9 +83,9 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-8">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-white rounded-lg p-2 flex items-center justify-center overflow-hidden shadow-md border border-gray-200">
+                <div className="w-16 h-16 flex items-center justify-center">
                   <img 
-                    src="/lovable-uploads/984f40fa-0c6f-4a03-a482-7f2ab4226f5f.png" 
+                    src="/lovable-uploads/6e1da3af-20f1-469a-8fb3-547fa3c534ac.png" 
                     alt="الكرين" 
                     className="w-full h-full object-contain"
                   />
@@ -102,6 +101,7 @@ const Index = () => {
                 <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">عنا</a>
               </nav>
             </div>
+            
             
             <div className="flex items-center gap-3">
               {user ? (
@@ -511,9 +511,9 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-white rounded-lg p-2 flex items-center justify-center overflow-hidden">
+                <div className="w-12 h-12 flex items-center justify-center">
                   <img 
-                    src="/lovable-uploads/984f40fa-0c6f-4a03-a482-7f2ab4226f5f.png" 
+                    src="/lovable-uploads/6e1da3af-20f1-469a-8fb3-547fa3c534ac.png" 
                     alt="الكرين" 
                     className="w-full h-full object-contain"
                   />
