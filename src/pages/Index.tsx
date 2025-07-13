@@ -83,7 +83,7 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-8">
               <div className="flex items-center gap-3">
-                <div className="w-32 h-32 border-2 border-amber-500 bg-transparent rounded-lg p-4 flex items-center justify-center">
+                <div className="w-24 h-24 border-2 border-amber-500 bg-transparent rounded-lg p-3 flex items-center justify-center">
                   <img 
                     src="/lovable-uploads/6e1da3af-20f1-469a-8fb3-547fa3c534ac.png" 
                     alt="الكرين" 
@@ -511,7 +511,7 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-24 h-24 border-2 border-amber-500 bg-transparent rounded-lg p-3 flex items-center justify-center">
+                <div className="w-16 h-16 border-2 border-amber-500 bg-transparent rounded-lg p-2 flex items-center justify-center">
                   <img 
                     src="/lovable-uploads/6e1da3af-20f1-469a-8fb3-547fa3c534ac.png" 
                     alt="الكرين" 
