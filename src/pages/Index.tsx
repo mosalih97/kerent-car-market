@@ -183,18 +183,31 @@ const Index = () => {
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-blue-600" />
-                    المدينة
+                    الولاية
                   </label>
                   <Select onValueChange={(value) => setSearchFilters(prev => ({ ...prev, city: value }))}>
                     <SelectTrigger className="h-12 text-right">
-                      <SelectValue placeholder="اختر المدينة" />
+                      <SelectValue placeholder="اختر الولاية" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="الخرطوم">الخرطوم</SelectItem>
-                      <SelectItem value="بورتسودان">بورتسودان</SelectItem>
-                      <SelectItem value="مدني">مدني</SelectItem>
+                      <SelectItem value="الجزيرة">الجزيرة</SelectItem>
+                      <SelectItem value="النيل الأبيض">النيل الأبيض</SelectItem>
+                      <SelectItem value="سنار">سنار</SelectItem>
+                      <SelectItem value="النيل الأزرق">النيل الأزرق</SelectItem>
+                      <SelectItem value="القضارف">القضارف</SelectItem>
                       <SelectItem value="كسلا">كسلا</SelectItem>
-                      <SelectItem value="نيالا">نيالا</SelectItem>
+                      <SelectItem value="البحر الأحمر">البحر الأحمر</SelectItem>
+                      <SelectItem value="الشمالية">الشمالية</SelectItem>
+                      <SelectItem value="نهر النيل">نهر النيل</SelectItem>
+                      <SelectItem value="شمال كردفان">شمال كردفان</SelectItem>
+                      <SelectItem value="جنوب كردفان">جنوب كردفان</SelectItem>
+                      <SelectItem value="غرب كردفان">غرب كردفان</SelectItem>
+                      <SelectItem value="شمال دارفور">شمال دارفور</SelectItem>
+                      <SelectItem value="جنوب دارفور">جنوب دارفور</SelectItem>
+                      <SelectItem value="شرق دارفور">شرق دارفور</SelectItem>
+                      <SelectItem value="غرب دارفور">غرب دارفور</SelectItem>
+                      <SelectItem value="وسط دارفور">وسط دارفور</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -202,10 +215,10 @@ const Index = () => {
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                     <Car className="w-4 h-4 text-blue-600" />
-                    الماركة
+                    العلامة التجارية
                   </label>
                   <Input 
-                    placeholder="اكتب اسم الماركة" 
+                    placeholder="اكتب اسم العلامة التجارية" 
                     className="h-12 text-right"
                     value={searchFilters.brand}
                     onChange={(e) => setSearchFilters(prev => ({ ...prev, brand: e.target.value }))}
@@ -381,7 +394,7 @@ const Index = () => {
                         </p>
                       </div>
                       <div className="bg-gray-50 p-3 rounded-lg">
-                        <p className="text-gray-500 mb-1">الماركة</p>
+                        <p className="text-gray-500 mb-1">العلامة التجارية</p>
                         <p className="font-semibold text-gray-800 capitalize">{ad.brand}</p>
                       </div>
                     </div>

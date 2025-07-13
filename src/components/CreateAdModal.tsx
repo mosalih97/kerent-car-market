@@ -27,7 +27,9 @@ interface FormData {
   mileage?: string;
   condition: 'new' | 'used' | 'excellent' | 'good' | 'fair';
   city: string;
+  localCity?: string;
   phone: string;
+  whatsapp: string;
 }
 
 const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
@@ -79,7 +81,7 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
       }
       
       if (!data.brand) {
-        toast.error("الماركة مطلوبة");
+        toast.error("العلامة التجارية مطلوبة");
         return;
       }
       
@@ -99,12 +101,17 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
       }
       
       if (!data.city) {
-        toast.error("المدينة مطلوبة");
+        toast.error("الولاية مطلوبة");
         return;
       }
       
       if (!data.phone?.trim()) {
         toast.error("رقم الهاتف مطلوب");
+        return;
+      }
+
+      if (!data.whatsapp?.trim()) {
+        toast.error("رقم الواتساب مطلوب");
         return;
       }
 
@@ -127,7 +134,7 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
         year: Number(data.year),
         mileage: data.mileage ? Number(data.mileage) : undefined,
         condition: data.condition,
-        city: data.city,
+        city: data.localCity?.trim() ? `${data.city} - ${data.localCity.trim()}` : data.city,
         phone: data.phone.trim(),
         images: imageUrls,
       };
@@ -242,25 +249,35 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
           {/* Car Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="brand">الماركة *</Label>
+              <Label htmlFor="brand">العلامة التجارية *</Label>
               <Select onValueChange={(value) => setValue("brand", value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="اختر الماركة" />
+                  <SelectValue placeholder="اختر العلامة التجارية" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="toyota">تويوتا</SelectItem>
-                  <SelectItem value="honda">هوندا</SelectItem>
-                  <SelectItem value="nissan">نيسان</SelectItem>
-                  <SelectItem value="hyundai">هيونداي</SelectItem>
-                  <SelectItem value="bmw">بي إم دبليو</SelectItem>
-                  <SelectItem value="mercedes">مرسيدس</SelectItem>
-                  <SelectItem value="audi">أودي</SelectItem>
-                  <SelectItem value="kia">كيا</SelectItem>
-                  <SelectItem value="mazda">مازدا</SelectItem>
-                  <SelectItem value="mitsubishi">ميتسوبيشي</SelectItem>
+                  <SelectItem value="تويوتا">تويوتا (Toyota)</SelectItem>
+                  <SelectItem value="نيسان">نيسان (Nissan)</SelectItem>
+                  <SelectItem value="هيونداي">هيونداي (Hyundai)</SelectItem>
+                  <SelectItem value="كيا">كيا (Kia)</SelectItem>
+                  <SelectItem value="ميتسوبيشي">ميتسوبيشي (Mitsubishi)</SelectItem>
+                  <SelectItem value="هوندا">هوندا (Honda)</SelectItem>
+                  <SelectItem value="سوزوكي">سوزوكي (Suzuki)</SelectItem>
+                  <SelectItem value="شيفروليه">شيفروليه (Chevrolet)</SelectItem>
+                  <SelectItem value="فورد">فورد (Ford)</SelectItem>
+                  <SelectItem value="مرسيدس بنز">مرسيدس بنز (Mercedes-Benz)</SelectItem>
+                  <SelectItem value="بي إم دبليو">بي إم دبليو (BMW)</SelectItem>
+                  <SelectItem value="جيب">جيب (Jeep)</SelectItem>
+                  <SelectItem value="لاند روفر">لاند روفر (Land Rover)</SelectItem>
+                  <SelectItem value="دايهاتسو">دايهاتسو (Daihatsu)</SelectItem>
+                  <SelectItem value="جيلي">جيلي (Geely)</SelectItem>
+                  <SelectItem value="شيري">شيري (Chery)</SelectItem>
+                  <SelectItem value="هافال">هافال (Haval)</SelectItem>
+                  <SelectItem value="فوتون">فوتون (Foton)</SelectItem>
+                  <SelectItem value="بايك">بايك (BAIC)</SelectItem>
+                  <SelectItem value="ايسوزو">ايسوزو (Isuzu)</SelectItem>
                 </SelectContent>
               </Select>
-              <input type="hidden" {...register("brand", { required: "الماركة مطلوبة" })} />
+              <input type="hidden" {...register("brand", { required: "العلامة التجارية مطلوبة" })} />
               {errors.brand && <p className="text-red-500 text-sm mt-1">{errors.brand.message}</p>}
             </div>
 
@@ -321,27 +338,47 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
           {/* Location & Contact */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="city">المدينة *</Label>
+              <Label htmlFor="city">الولاية *</Label>
               <Select onValueChange={(value) => setValue("city", value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="اختر المدينة" />
+                  <SelectValue placeholder="اختر الولاية" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="الخرطوم">الخرطوم</SelectItem>
-                  <SelectItem value="بورتسودان">بورتسودان</SelectItem>
-                  <SelectItem value="مدني">مدني</SelectItem>
-                  <SelectItem value="كسلا">كسلا</SelectItem>
-                  <SelectItem value="نيالا">نيالا</SelectItem>
-                  <SelectItem value="الأبيض">الأبيض</SelectItem>
+                  <SelectItem value="الجزيرة">الجزيرة</SelectItem>
+                  <SelectItem value="النيل الأبيض">النيل الأبيض</SelectItem>
+                  <SelectItem value="سنار">سنار</SelectItem>
+                  <SelectItem value="النيل الأزرق">النيل الأزرق</SelectItem>
                   <SelectItem value="القضارف">القضارف</SelectItem>
-                  <SelectItem value="أم درمان">أم درمان</SelectItem>
-                  <SelectItem value="الخرطوم بحري">الخرطوم بحري</SelectItem>
+                  <SelectItem value="كسلا">كسلا</SelectItem>
+                  <SelectItem value="البحر الأحمر">البحر الأحمر</SelectItem>
+                  <SelectItem value="الشمالية">الشمالية</SelectItem>
+                  <SelectItem value="نهر النيل">نهر النيل</SelectItem>
+                  <SelectItem value="شمال كردفان">شمال كردفان</SelectItem>
+                  <SelectItem value="جنوب كردفان">جنوب كردفان</SelectItem>
+                  <SelectItem value="غرب كردفان">غرب كردفان</SelectItem>
+                  <SelectItem value="شمال دارفور">شمال دارفور</SelectItem>
+                  <SelectItem value="جنوب دارفور">جنوب دارفور</SelectItem>
+                  <SelectItem value="شرق دارفور">شرق دارفور</SelectItem>
+                  <SelectItem value="غرب دارفور">غرب دارفور</SelectItem>
+                  <SelectItem value="وسط دارفور">وسط دارفور</SelectItem>
                 </SelectContent>
               </Select>
-              <input type="hidden" {...register("city", { required: "المدينة مطلوبة" })} />
+              <input type="hidden" {...register("city", { required: "الولاية مطلوبة" })} />
               {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city.message}</p>}
             </div>
 
+            <div>
+              <Label htmlFor="localCity">اكتب المدينة (اختياري)</Label>
+              <Input
+                id="localCity"
+                {...register("localCity")}
+                placeholder="مثال: الخرطوم"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="phone">رقم الهاتف *</Label>
               <Input
@@ -352,6 +389,18 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
                 placeholder="+249123456789"
               />
               {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>}
+            </div>
+
+            <div>
+              <Label htmlFor="whatsapp">رقم الواتساب *</Label>
+              <Input
+                id="whatsapp"
+                {...register("whatsapp", { 
+                  required: "رقم الواتساب مطلوب"
+                })}
+                placeholder="+249123456789"
+              />
+              {errors.whatsapp && <p className="text-red-500 text-sm mt-1">{errors.whatsapp.message}</p>}
             </div>
           </div>
 
