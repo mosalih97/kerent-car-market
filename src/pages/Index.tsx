@@ -83,8 +83,12 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-8">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg flex items-center justify-center">
-                  <Car className="w-6 h-6 text-white" />
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-1 flex items-center justify-center overflow-hidden">
+                  <img 
+                    src="/lovable-uploads/984f40fa-0c6f-4a03-a482-7f2ab4226f5f.png" 
+                    alt="الكرين" 
+                    className="w-full h-full object-contain filter brightness-0 invert"
+                  />
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold text-blue-800">الكرين</h1>
@@ -97,6 +101,7 @@ const Index = () => {
                 <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">عنا</a>
               </nav>
             </div>
+            
             <div className="flex items-center gap-3">
               {user ? (
                 <>
@@ -484,8 +489,12 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg flex items-center justify-center">
-                  <Car className="w-6 h-6 text-white" />
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-1 flex items-center justify-center overflow-hidden">
+                  <img 
+                    src="/lovable-uploads/984f40fa-0c6f-4a03-a482-7f2ab4226f5f.png" 
+                    alt="الكرين" 
+                    className="w-full h-full object-contain filter brightness-0 invert"
+                  />
                 </div>
                 <h5 className="text-xl font-bold">الكرين</h5>
               </div>
