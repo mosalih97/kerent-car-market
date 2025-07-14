@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { User, Settings, MessageSquare, Bell, Plus, LogOut, Edit, Trash2, Eye, Coins, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,11 +7,13 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useMyAds, useDeleteAd } from '@/hooks/useAds';
 import { useProfile } from '@/hooks/useProfile';
+import { useNavigate } from 'react-router-dom';
 import CreateAdModal from './CreateAdModal';
 import PremiumCard from './PremiumCard';
 
 const UserDashboard = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const { data: myAds, isLoading } = useMyAds();
   const { profile, isLoading: profileLoading } = useProfile();
   const deleteAdMutation = useDeleteAd();
@@ -31,6 +32,11 @@ const UserDashboard = () => {
     if (window.confirm('هل تريد حذف هذا الإعلان؟')) {
       deleteAdMutation.mutate(adId);
     }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/'); // إعادة توجيه إلى الصفحة الرئيسية بعد تسجيل الخروج
   };
 
   if (profileLoading) {
@@ -274,7 +280,7 @@ const UserDashboard = () => {
                   </div>
                   <div className="pt-4 border-t">
                     <Button 
-                      onClick={signOut}
+                      onClick={handleSignOut}
                       variant="destructive" 
                       className="w-full"
                     >
