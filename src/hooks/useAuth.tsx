@@ -12,6 +12,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any }>;
+  updatePassword: (password: string) => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,6 +30,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+
+        // Handle password recovery
+        if (event === 'PASSWORD_RECOVERY') {
+          toast.success('يمكنك الآن إدخال كلمة المرور الجديدة');
+        }
       }
     );
 
@@ -57,7 +63,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     if (error) {
-      toast.error(error.message);
+      // تعريب رسائل الخطأ الشائعة
+      let arabicMessage = error.message;
+      if (error.message.includes('already registered')) {
+        arabicMessage = 'البريد الإلكتروني مسجل مسبقاً';
+      } else if (error.message.includes('Invalid email')) {
+        arabicMessage = 'البريد الإلكتروني غير صحيح';
+      } else if (error.message.includes('Password')) {
+        arabicMessage = 'كلمة المرور ضعيفة جداً';
+      }
+      toast.error(arabicMessage);
     } else {
       toast.success('تم إنشاء الحساب بنجاح! تحقق من بريدك الإلكتروني');
     }
@@ -72,7 +87,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     if (error) {
-      toast.error(error.message);
+      // تعريب رسائل الخطأ الشائعة
+      let arabicMessage = error.message;
+      if (error.message.includes('Invalid login credentials')) {
+        arabicMessage = 'البريد الإلكتروني أو كلمة المرور غير صحيحة';
+      } else if (error.message.includes('Email not confirmed')) {
+        arabicMessage = 'يرجى تأكيد البريد الإلكتروني أولاً';
+      } else if (error.message.includes('Too many requests')) {
+        arabicMessage = 'تم تجاوز عدد المحاولات المسموح، حاول لاحقاً';
+      }
+      toast.error(arabicMessage);
     } else {
       toast.success('تم تسجيل الدخول بنجاح');
     }
@@ -81,16 +105,40 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const resetPassword = async (email: string) => {
-    const redirectUrl = `${window.location.origin}/auth`;
+    const redirectUrl = `${window.location.origin}/auth?mode=reset`;
     
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: redirectUrl
     });
 
     if (error) {
-      toast.error(error.message);
+      let arabicMessage = error.message;
+      if (error.message.includes('not found')) {
+        arabicMessage = 'البريد الإلكتروني غير مسجل في النظام';
+      } else if (error.message.includes('Too many requests')) {
+        arabicMessage = 'تم تجاوز عدد المحاولات، حاول لاحقاً';
+      }
+      toast.error(arabicMessage);
     } else {
       toast.success('تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني');
+    }
+
+    return { error };
+  };
+
+  const updatePassword = async (password: string) => {
+    const { error } = await supabase.auth.updateUser({
+      password: password
+    });
+
+    if (error) {
+      let arabicMessage = error.message;
+      if (error.message.includes('weak')) {
+        arabicMessage = 'كلمة المرور ضعيفة جداً';
+      }
+      toast.error(arabicMessage);
+    } else {
+      toast.success('تم تحديث كلمة المرور بنجاح');
     }
 
     return { error };
@@ -99,7 +147,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      toast.error(error.message);
+      toast.error('حدث خطأ أثناء تسجيل الخروج');
     } else {
       toast.success('تم تسجيل الخروج بنجاح');
     }
@@ -113,7 +161,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       signUp,
       signIn,
       signOut,
-      resetPassword
+      resetPassword,
+      updatePassword
     }}>
       {children}
     </AuthContext.Provider>
