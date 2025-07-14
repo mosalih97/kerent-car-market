@@ -1,5 +1,5 @@
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useEffect } from 'react';
@@ -55,5 +55,37 @@ export const useCredits = () => {
     };
   }, [user?.id, queryClient]);
 
-  return { credits, loading };
+  const deductCreditMutation = useMutation({
+    mutationFn: async (amount: number = 1) => {
+      if (!user?.id) throw new Error('المستخدم غير مسجل');
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ credits: Math.max(0, credits - amount) })
+        .eq('id', user.id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['credits', user?.id] });
+    },
+  });
+
+  const refreshCredits = () => {
+    queryClient.invalidateQueries({ queryKey: ['credits', user?.id] });
+  };
+
+  const deductCredit = (amount: number = 1) => {
+    return deductCreditMutation.mutateAsync(amount);
+  };
+
+  return { 
+    credits, 
+    loading, 
+    deductCredit, 
+    refreshCredits 
+  };
 };

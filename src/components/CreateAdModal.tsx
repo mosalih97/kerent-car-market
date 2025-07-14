@@ -10,8 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCreateAd } from "@/hooks/useAds";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { useAdLimits, useCheckAdLimit } from "@/hooks/useAdLimits";
+import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
-import { X, Upload, AlertCircle, Star } from "lucide-react";
+import { X, Upload, AlertCircle, Star, Crown } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface CreateAdModalProps {
@@ -43,6 +44,11 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
   const { uploadImages, uploading } = useImageUpload();
   const { data: adLimits } = useAdLimits();
   const { data: canCreateAd } = useCheckAdLimit();
+  const { profile } = useProfile();
+
+  console.log('Ad limits:', adLimits);
+  console.log('Can create ad:', canCreateAd);
+  console.log('Profile:', profile);
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -177,7 +183,14 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
           <Alert className="mb-4">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription className="text-right">
-              {canCreateAd ? (
+              {profile?.is_premium ? (
+                <div className="flex items-center gap-2">
+                  <Crown className="w-4 h-4 text-amber-500" />
+                  <span className="text-amber-600 font-medium">
+                    عضو مميز - إعلانات غير محدودة
+                  </span>
+                </div>
+              ) : canCreateAd ? (
                 <span className="text-green-600 font-medium">
                   يمكنك إضافة {adLimits.max_ads - adLimits.ads_count} إعلان إضافي هذا الشهر
                   ({adLimits.ads_count}/{adLimits.max_ads} مستخدم)
@@ -447,7 +460,7 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
           <Button 
             type="submit" 
             className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 py-3 text-lg"
-            disabled={createAdMutation.isPending || uploading || !canCreateAd}
+            disabled={createAdMutation.isPending || uploading || (!profile?.is_premium && !canCreateAd)}
           >
             {createAdMutation.isPending || uploading ? (
               <div className="flex items-center gap-2">
