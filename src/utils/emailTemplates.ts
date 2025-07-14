@@ -9,62 +9,127 @@ export const getArabicEmailTemplate = (type: 'signup' | 'recovery' | 'magic_link
   const baseStyles = `
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap');
-      .email-container {
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
         font-family: 'Cairo', Arial, sans-serif;
         direction: rtl;
+        background-color: #f8fafc;
+        padding: 20px;
+      }
+      .email-container {
         max-width: 600px;
         margin: 0 auto;
-        padding: 20px;
         background-color: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       }
       .header {
-        text-align: center;
-        margin-bottom: 30px;
-        padding: 20px;
         background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-        border-radius: 12px;
+        padding: 30px 20px;
+        text-align: center;
         color: white;
       }
+      .header h1 {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+      .header p {
+        font-size: 16px;
+        opacity: 0.9;
+      }
       .content {
-        background: #f8fafc;
-        padding: 30px;
-        border-radius: 12px;
+        padding: 40px 30px;
+      }
+      .content h2 {
+        color: #1f2937;
+        font-size: 24px;
+        font-weight: 600;
         margin-bottom: 20px;
-        border: 1px solid #e2e8f0;
+        text-align: center;
+      }
+      .content p {
+        color: #4b5563;
+        font-size: 16px;
+        line-height: 1.8;
+        margin-bottom: 25px;
+      }
+      .button-container {
+        text-align: center;
+        margin: 30px 0;
       }
       .button {
         display: inline-block;
         padding: 15px 30px;
+        background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+        color: white;
         text-decoration: none;
         border-radius: 8px;
         font-size: 16px;
         font-weight: bold;
-        text-align: center;
-        margin: 20px 0;
+        transition: transform 0.2s ease;
       }
-      .button-primary {
-        background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
-        color: white;
+      .button:hover {
+        transform: translateY(-2px);
       }
-      .button-danger {
+      .button.danger {
         background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
-        color: white;
-      }
-      .footer {
-        text-align: center;
-        color: #9ca3af;
-        font-size: 12px;
-        margin-top: 30px;
-        padding-top: 20px;
-        border-top: 1px solid #e5e7eb;
       }
       .warning-box {
         background: #fef2f2;
         border: 1px solid #fecaca;
         border-radius: 8px;
+        padding: 20px;
+        margin-top: 25px;
+      }
+      .warning-box h3 {
+        color: #dc2626;
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+      .warning-box ul {
+        color: #dc2626;
+        font-size: 14px;
+        margin-right: 20px;
+      }
+      .warning-box li {
+        margin-bottom: 5px;
+      }
+      .info-box {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 8px;
         padding: 15px;
         margin-top: 20px;
-        color: #dc2626;
+      }
+      .info-box p {
+        color: #0369a1;
+        font-size: 14px;
+        margin: 0;
+      }
+      .footer {
+        background: #f8fafc;
+        padding: 25px 30px;
+        text-align: center;
+        border-top: 1px solid #e5e7eb;
+      }
+      .footer p {
+        color: #9ca3af;
+        font-size: 12px;
+        margin-bottom: 8px;
+      }
+      .footer a {
+        color: #6b7280;
+        text-decoration: none;
+      }
+      .footer a:hover {
+        color: #374151;
       }
     </style>
   `;
@@ -83,36 +148,37 @@ export const getArabicEmailTemplate = (type: 'signup' | 'recovery' | 'magic_link
         <body>
           <div class="email-container">
             <div class="header">
-              <h1 style="margin: 0; font-size: 32px; font-weight: 700;">${siteName}</h1>
-              <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">موقع السيارات الأول في السودان</p>
+              <h1>${siteName}</h1>
+              <p>موقع السيارات الأول في السودان</p>
             </div>
             
             <div class="content">
-              <h2 style="color: #1f2937; font-size: 24px; margin-bottom: 20px; font-weight: 600;">
-                مرحباً بك في ${siteName}! 🎉
-              </h2>
+              <h2>🎉 مرحباً بك في ${siteName}!</h2>
               
-              <p style="color: #4b5563; font-size: 16px; line-height: 1.8; margin-bottom: 25px;">
+              <p>
                 نشكرك لاختيارك ${siteName} لشراء وبيع السيارات. لإكمال عملية التسجيل وتفعيل حسابك، 
                 يرجى النقر على الزر أدناه لتأكيد عنوان بريدك الإلكتروني.
               </p>
               
-              <div style="text-align: center;">
-                <a href="${confirmUrl}" class="button button-primary">
+              <div class="button-container">
+                <a href="${confirmUrl}" class="button">
                   ✅ تأكيد الحساب الآن
                 </a>
               </div>
               
-              <p style="color: #6b7280; font-size: 14px; margin-top: 25px; line-height: 1.6;">
-                <strong>ملاحظة:</strong> إذا لم تقم بإنشاء هذا الحساب، يمكنك تجاهل هذه الرسالة بأمان. 
-                لن يتم إنشاء أي حساب بدون تأكيد عنوان البريد الإلكتروني.
-              </p>
+              <div class="info-box">
+                <p>
+                  <strong>ملاحظة:</strong> إذا لم تقم بإنشاء هذا الحساب، يمكنك تجاهل هذه الرسالة بأمان. 
+                  لن يتم إنشاء أي حساب بدون تأكيد عنوان البريد الإلكتروني.
+                </p>
+              </div>
             </div>
             
             <div class="footer">
               <p>© 2025 ${siteName} - جميع الحقوق محفوظة</p>
-              <p style="margin-top: 5px;">
-                <a href="mailto:info@alkeren.com" style="color: #6b7280; text-decoration: none;">info@alkeren.com</a>
+              <p>
+                <a href="mailto:info@alkeren.com">info@alkeren.com</a> | 
+                <a href="tel:+249123456789">+249 123 456 789</a>
               </p>
             </div>
           </div>
@@ -133,42 +199,40 @@ export const getArabicEmailTemplate = (type: 'signup' | 'recovery' | 'magic_link
         <body>
           <div class="email-container">
             <div class="header">
-              <h1 style="margin: 0; font-size: 32px; font-weight: 700;">${siteName}</h1>
-              <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">إعادة تعيين كلمة المرور</p>
+              <h1>${siteName}</h1>
+              <p>إعادة تعيين كلمة المرور</p>
             </div>
             
             <div class="content">
-              <h2 style="color: #1f2937; font-size: 24px; margin-bottom: 20px; font-weight: 600;">
-                🔐 إعادة تعيين كلمة المرور
-              </h2>
+              <h2>🔐 إعادة تعيين كلمة المرور</h2>
               
-              <p style="color: #4b5563; font-size: 16px; line-height: 1.8; margin-bottom: 25px;">
+              <p>
                 تلقينا طلباً لإعادة تعيين كلمة المرور لحسابك في ${siteName}. 
                 إذا كنت قد طلبت ذلك، انقر على الزر أدناه لإنشاء كلمة مرور جديدة وآمنة.
               </p>
               
-              <div style="text-align: center;">
-                <a href="${confirmUrl}" class="button button-danger">
+              <div class="button-container">
+                <a href="${confirmUrl}" class="button danger">
                   🔑 إعادة تعيين كلمة المرور
                 </a>
               </div>
               
               <div class="warning-box">
-                <p style="margin: 0; font-size: 14px; font-weight: 600;">
-                  ⚠️ تنبيه أمني مهم:
-                </p>
-                <ul style="margin: 10px 0 0 20px; padding: 0; font-size: 13px;">
+                <h3>⚠️ تنبيه أمني مهم:</h3>
+                <ul>
                   <li>هذا الرابط صالح لمدة ساعة واحدة فقط</li>
                   <li>إذا لم تطلب إعادة تعيين كلمة المرور، تجاهل هذه الرسالة</li>
                   <li>لا تشارك هذا الرابط مع أي شخص آخر</li>
+                  <li>تأكد من استخدام كلمة مرور قوية وفريدة</li>
                 </ul>
               </div>
             </div>
             
             <div class="footer">
               <p>© 2025 ${siteName} - جميع الحقوق محفوظة</p>
-              <p style="margin-top: 5px;">
-                <a href="mailto:info@alkeren.com" style="color: #6b7280; text-decoration: none;">info@alkeren.com</a>
+              <p>
+                <a href="mailto:info@alkeren.com">info@alkeren.com</a> | 
+                <a href="tel:+249123456789">+249 123 456 789</a>
               </p>
             </div>
           </div>
@@ -189,35 +253,37 @@ export const getArabicEmailTemplate = (type: 'signup' | 'recovery' | 'magic_link
         <body>
           <div class="email-container">
             <div class="header">
-              <h1 style="margin: 0; font-size: 32px; font-weight: 700;">${siteName}</h1>
-              <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">دخول سريع وآمن</p>
+              <h1>${siteName}</h1>
+              <p>دخول سريع وآمن</p>
             </div>
             
             <div class="content">
-              <h2 style="color: #1f2937; font-size: 24px; margin-bottom: 20px; font-weight: 600;">
-                ✨ رابط الدخول السريع
-              </h2>
+              <h2>✨ رابط الدخول السريع</h2>
               
-              <p style="color: #4b5563; font-size: 16px; line-height: 1.8; margin-bottom: 25px;">
-                انقر على الرابط أدناه للدخول إلى حسابك في ${siteName} مباشرة بدون الحاجة لكتابة كلمة المرور.
+              <p>
+                انقر على الرابط أدناه للدخول إلى حسابك في ${siteName} مباشرة 
+                بدون الحاجة لكتابة كلمة المرور.
               </p>
               
-              <div style="text-align: center;">
-                <a href="${confirmUrl}" class="button button-primary">
-                  🚀 دخول سريع
+              <div class="button-container">
+                <a href="${confirmUrl}" class="button">
+                  🚀 دخول سريع الآن
                 </a>
               </div>
               
-              <p style="color: #6b7280; font-size: 14px; margin-top: 25px; line-height: 1.6;">
-                <strong>ملاحظة:</strong> هذا الرابط صالح لمرة واحدة فقط ولمدة 15 دقيقة. 
-                إذا لم تطلب تسجيل الدخول، يمكنك تجاهل هذه الرسالة بأمان.
-              </p>
+              <div class="info-box">
+                <p>
+                  <strong>ملاحظة:</strong> هذا الرابط صالح لمرة واحدة فقط ولمدة 15 دقيقة. 
+                  إذا لم تطلب تسجيل الدخول، يمكنك تجاهل هذه الرسالة بأمان.
+                </p>
+              </div>
             </div>
             
             <div class="footer">
               <p>© 2025 ${siteName} - جميع الحقوق محفوظة</p>
-              <p style="margin-top: 5px;">
-                <a href="mailto:info@alkeren.com" style="color: #6b7280; text-decoration: none;">info@alkeren.com</a>
+              <p>
+                <a href="mailto:info@alkeren.com">info@alkeren.com</a> | 
+                <a href="tel:+249123456789">+249 123 456 789</a>
               </p>
             </div>
           </div>
@@ -238,19 +304,16 @@ export const getArabicEmailTemplate = (type: 'signup' | 'recovery' | 'magic_link
         <body>
           <div class="email-container">
             <div class="header">
-              <h1 style="margin: 0; font-size: 32px; font-weight: 700;">${siteName}</h1>
-              <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">موقع السيارات الأول في السودان</p>
+              <h1>${siteName}</h1>
+              <p>موقع السيارات الأول في السودان</p>
             </div>
             
             <div class="content">
-              <p style="color: #4b5563; font-size: 16px; line-height: 1.8;">
-                تم إرسال هذه الرسالة من نظام ${siteName}.
-              </p>
+              <h2>رسالة من ${siteName}</h2>
+              <p>تم إرسال هذه الرسالة من نظام ${siteName}.</p>
               
-              <div style="text-align: center;">
-                <a href="${confirmUrl}" class="button button-primary">
-                  متابعة
-                </a>
+              <div class="button-container">
+                <a href="${confirmUrl}" class="button">متابعة</a>
               </div>
             </div>
             
