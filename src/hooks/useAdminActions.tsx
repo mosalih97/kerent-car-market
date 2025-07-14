@@ -1,3 +1,4 @@
+
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -22,10 +23,27 @@ export const useAdminUpdateUserType = () => {
       
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_, { targetUserId, userType }) => {
+      // Invalidate all related queries
       queryClient.invalidateQueries({ queryKey: ['profiles'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
-      toast.success('تم تحديث نوع المستخدم بنجاح');
+      queryClient.invalidateQueries({ queryKey: ['profile', targetUserId] });
+      queryClient.invalidateQueries({ queryKey: ['credits', targetUserId] });
+      
+      // Update the specific user's profile cache immediately
+      queryClient.setQueryData(['profile', targetUserId], (oldData: any) => {
+        if (oldData) {
+          return {
+            ...oldData,
+            user_type: userType,
+            is_premium: userType === 'premium',
+            updated_at: new Date().toISOString()
+          };
+        }
+        return oldData;
+      });
+
+      toast.success(`تم تحديث نوع المستخدم إلى ${userType === 'premium' ? 'مميز' : 'مجاني'} بنجاح`);
     },
     onError: (error) => {
       toast.error(`خطأ: ${error.message}`);
@@ -56,6 +74,7 @@ export const useAdminToggleAdStatus = () => {
       queryClient.invalidateQueries({ queryKey: ['ads'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
       queryClient.invalidateQueries({ queryKey: ['adminAds'] });
+      queryClient.invalidateQueries({ queryKey: ['myAds'] });
       toast.success('تم تحديث حالة الإعلان بنجاح');
     },
     onError: (error) => {

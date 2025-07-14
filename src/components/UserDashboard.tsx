@@ -1,19 +1,20 @@
+
 import { useState } from 'react';
-import { User, Settings, MessageSquare, Bell, Plus, LogOut, Edit, Trash2, Eye, Coins } from 'lucide-react';
+import { User, Settings, MessageSquare, Bell, Plus, LogOut, Edit, Trash2, Eye, Coins, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useMyAds, useDeleteAd } from '@/hooks/useAds';
-import { useCredits } from '@/hooks/useCredits';
+import { useProfile } from '@/hooks/useProfile';
 import CreateAdModal from './CreateAdModal';
 import PremiumCard from './PremiumCard';
 
 const UserDashboard = () => {
   const { user, signOut } = useAuth();
   const { data: myAds, isLoading } = useMyAds();
-  const { credits, loading: creditsLoading } = useCredits();
+  const { profile, isLoading: profileLoading } = useProfile();
   const deleteAdMutation = useDeleteAd();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -32,6 +33,17 @@ const UserDashboard = () => {
     }
   };
 
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-gray-600">جاري التحميل...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4" dir="rtl">
       <div className="container mx-auto max-w-6xl">
@@ -39,23 +51,31 @@ const UserDashboard = () => {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-gray-800 mb-2">لوحة التحكم</h1>
-              <p className="text-gray-600">مرحباً {user?.user_metadata?.full_name || user?.email}</p>
+              <p className="text-gray-600">مرحباً {profile?.full_name || user?.email}</p>
             </div>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1 bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
                 <Coins className="w-4 h-4" />
                 <span className="font-medium">
-                  {creditsLoading ? '...' : credits} كريديت
+                  {profile?.credits || 0} كريديت
                 </span>
               </div>
+              {profile?.is_premium && (
+                <div className="flex items-center gap-1 bg-gradient-to-r from-amber-100 to-amber-200 text-amber-800 px-3 py-1 rounded-full">
+                  <Crown className="w-4 h-4" />
+                  <span className="font-medium">عضو مميز</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Premium Card */}
-        <div className="mb-8">
-          <PremiumCard variant="dashboard" />
-        </div>
+        {/* Premium Card - Only show to free users */}
+        {!profile?.is_premium && (
+          <div className="mb-8">
+            <PremiumCard variant="dashboard" />
+          </div>
+        )}
 
         <Tabs defaultValue="ads" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 lg:w-max">
@@ -222,7 +242,7 @@ const UserDashboard = () => {
                 <CardContent className="space-y-4">
                   <div>
                     <label className="text-sm font-medium text-gray-500">الاسم</label>
-                    <p className="text-lg">{user?.user_metadata?.full_name || 'غير محدد'}</p>
+                    <p className="text-lg">{profile?.full_name || 'غير محدد'}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-500">البريد الإلكتروني</label>
@@ -230,14 +250,22 @@ const UserDashboard = () => {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-500">نوع الحساب</label>
-                    <Badge variant="secondary">مجاني</Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge 
+                        variant={profile?.is_premium ? "default" : "secondary"}
+                        className={profile?.is_premium ? "bg-gradient-to-r from-amber-500 to-amber-600" : ""}
+                      >
+                        {profile?.is_premium && <Crown className="w-3 h-3 mr-1" />}
+                        {profile?.is_premium ? 'مميز' : 'مجاني'}
+                      </Badge>
+                    </div>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-500">الكريديت المتاح</label>
                     <div className="flex items-center gap-2">
                       <Coins className="w-4 h-4 text-yellow-600" />
                       <span className="text-lg font-bold text-yellow-600">
-                        {creditsLoading ? 'جاري التحميل...' : `${credits} كريديت`}
+                        {profile?.credits || 0} كريديت
                       </span>
                     </div>
                     <p className="text-sm text-gray-500 mt-1">

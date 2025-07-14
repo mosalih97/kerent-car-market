@@ -4,37 +4,33 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useEffect } from 'react';
 
-export const useCredits = () => {
+export const useProfile = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: credits = 0, isLoading: loading } = useQuery({
-    queryKey: ['credits', user?.id],
+  const { data: profile, isLoading, error } = useQuery({
+    queryKey: ['profile', user?.id],
     queryFn: async () => {
-      if (!user?.id) return 0;
+      if (!user?.id) return null;
       
       const { data, error } = await supabase
         .from('profiles')
-        .select('credits')
+        .select('*')
         .eq('id', user.id)
         .single();
       
-      if (error) {
-        console.error('Error fetching credits:', error);
-        return 0;
-      }
-      
-      return data?.credits || 0;
+      if (error) throw error;
+      return data;
     },
     enabled: !!user?.id,
   });
 
-  // Listen for real-time updates to credits
+  // Listen for real-time updates to profile
   useEffect(() => {
     if (!user?.id) return;
 
     const channel = supabase
-      .channel('credits-changes')
+      .channel('profile-changes')
       .on(
         'postgres_changes',
         {
@@ -44,8 +40,11 @@ export const useCredits = () => {
           filter: `id=eq.${user.id}`
         },
         (payload) => {
-          console.log('Credits updated:', payload);
-          queryClient.setQueryData(['credits', user.id], payload.new.credits);
+          console.log('Profile updated:', payload);
+          queryClient.setQueryData(['profile', user.id], payload.new);
+          // Invalidate related queries
+          queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
+          queryClient.invalidateQueries({ queryKey: ['credits'] });
         }
       )
       .subscribe();
@@ -55,5 +54,12 @@ export const useCredits = () => {
     };
   }, [user?.id, queryClient]);
 
-  return { credits, loading };
+  return {
+    profile,
+    isLoading,
+    error,
+    isAdmin: profile?.user_type === 'premium' || false,
+    isPremium: profile?.is_premium || false,
+    credits: profile?.credits || 0
+  };
 };
