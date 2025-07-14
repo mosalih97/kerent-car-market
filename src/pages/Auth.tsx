@@ -9,8 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Car, Mail, Lock, User } from 'lucide-react';
 
 const Auth = () => {
-  const { user, loading, signUp, signIn } = useAuth();
+  const { user, loading, signUp, signIn, resetPassword } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
   
   // Form states
   const [signInData, setSignInData] = useState({ email: '', password: '' });
@@ -49,6 +51,19 @@ const Auth = () => {
     setIsLoading(false);
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetEmail) {
+      alert('يرجى إدخال البريد الإلكتروني');
+      return;
+    }
+    setIsLoading(true);
+    await resetPassword(resetEmail);
+    setIsLoading(false);
+    setShowResetPassword(false);
+    setResetEmail('');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4" dir="rtl">
       <div className="w-full max-w-md">
@@ -69,14 +84,12 @@ const Auth = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="signin">تسجيل الدخول</TabsTrigger>
-                <TabsTrigger value="signup">إنشاء حساب</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="signin">
-                <form onSubmit={handleSignIn} className="space-y-4">
+            {showResetPassword ? (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-center text-gray-800 mb-4">
+                  استعادة كلمة المرور
+                </h3>
+                <form onSubmit={handleResetPassword} className="space-y-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                       <Mail className="w-4 h-4" />
@@ -84,105 +97,157 @@ const Auth = () => {
                     </label>
                     <Input
                       type="email"
-                      value={signInData.email}
-                      onChange={(e) => setSignInData(prev => ({ ...prev, email: e.target.value }))}
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
                       placeholder="أدخل بريدك الإلكتروني"
                       className="h-12 text-right"
                       required
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                      <Lock className="w-4 h-4" />
-                      كلمة المرور
-                    </label>
-                    <Input
-                      type="password"
-                      value={signInData.password}
-                      onChange={(e) => setSignInData(prev => ({ ...prev, password: e.target.value }))}
-                      placeholder="أدخل كلمة المرور"
-                      className="h-12 text-right"
-                      required
-                    />
+                  <div className="flex gap-2">
+                    <Button
+                      type="submit"
+                      className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? 'جارٍ الإرسال...' : 'إرسال رابط الاستعادة'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-12 px-6"
+                      onClick={() => setShowResetPassword(false)}
+                    >
+                      إلغاء
+                    </Button>
                   </div>
-                  <Button
-                    type="submit"
-                    className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? 'جارٍ تسجيل الدخول...' : 'تسجيل الدخول'}
-                  </Button>
                 </form>
-              </TabsContent>
+              </div>
+            ) : (
+              <Tabs defaultValue="signin" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-6">
+                  <TabsTrigger value="signin">تسجيل الدخول</TabsTrigger>
+                  <TabsTrigger value="signup">إنشاء حساب</TabsTrigger>
+                </TabsList>
 
-              <TabsContent value="signup">
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                      <User className="w-4 h-4" />
-                      الاسم الكامل
-                    </label>
-                    <Input
-                      type="text"
-                      value={signUpData.fullName}
-                      onChange={(e) => setSignUpData(prev => ({ ...prev, fullName: e.target.value }))}
-                      placeholder="أدخل اسمك الكامل"
-                      className="h-12 text-right"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                      <Mail className="w-4 h-4" />
-                      البريد الإلكتروني
-                    </label>
-                    <Input
-                      type="email"
-                      value={signUpData.email}
-                      onChange={(e) => setSignUpData(prev => ({ ...prev, email: e.target.value }))}
-                      placeholder="أدخل بريدك الإلكتروني"
-                      className="h-12 text-right"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                      <Lock className="w-4 h-4" />
-                      كلمة المرور
-                    </label>
-                    <Input
-                      type="password"
-                      value={signUpData.password}
-                      onChange={(e) => setSignUpData(prev => ({ ...prev, password: e.target.value }))}
-                      placeholder="أدخل كلمة المرور"
-                      className="h-12 text-right"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                      <Lock className="w-4 h-4" />
-                      تأكيد كلمة المرور
-                    </label>
-                    <Input
-                      type="password"
-                      value={signUpData.confirmPassword}
-                      onChange={(e) => setSignUpData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                      placeholder="أعد إدخال كلمة المرور"
-                      className="h-12 text-right"
-                      required
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    className="w-full h-12 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? 'جارٍ إنشاء الحساب...' : 'إنشاء حساب'}
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
+                <TabsContent value="signin">
+                  <form onSubmit={handleSignIn} className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        <Mail className="w-4 h-4" />
+                        البريد الإلكتروني
+                      </label>
+                      <Input
+                        type="email"
+                        value={signInData.email}
+                        onChange={(e) => setSignInData(prev => ({ ...prev, email: e.target.value }))}
+                        placeholder="أدخل بريدك الإلكتروني"
+                        className="h-12 text-right"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        <Lock className="w-4 h-4" />
+                        كلمة المرور
+                      </label>
+                      <Input
+                        type="password"
+                        value={signInData.password}
+                        onChange={(e) => setSignInData(prev => ({ ...prev, password: e.target.value }))}
+                        placeholder="أدخل كلمة المرور"
+                        className="h-12 text-right"
+                        required
+                      />
+                    </div>
+                    <div className="text-center">
+                      <button
+                        type="button"
+                        onClick={() => setShowResetPassword(true)}
+                        className="text-sm text-blue-600 hover:text-blue-800 underline"
+                      >
+                        نسيت كلمة المرور؟
+                      </button>
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? 'جارٍ تسجيل الدخول...' : 'تسجيل الدخول'}
+                    </Button>
+                  </form>
+                </TabsContent>
+
+                <TabsContent value="signup">
+                  <form onSubmit={handleSignUp} className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        <User className="w-4 h-4" />
+                        الاسم الكامل
+                      </label>
+                      <Input
+                        type="text"
+                        value={signUpData.fullName}
+                        onChange={(e) => setSignUpData(prev => ({ ...prev, fullName: e.target.value }))}
+                        placeholder="أدخل اسمك الكامل"
+                        className="h-12 text-right"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        <Mail className="w-4 h-4" />
+                        البريد الإلكتروني
+                      </label>
+                      <Input
+                        type="email"
+                        value={signUpData.email}
+                        onChange={(e) => setSignUpData(prev => ({ ...prev, email: e.target.value }))}
+                        placeholder="أدخل بريدك الإلكتروني"
+                        className="h-12 text-right"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        <Lock className="w-4 h-4" />
+                        كلمة المرور
+                      </label>
+                      <Input
+                        type="password"
+                        value={signUpData.password}
+                        onChange={(e) => setSignUpData(prev => ({ ...prev, password: e.target.value }))}
+                        placeholder="أدخل كلمة المرور"
+                        className="h-12 text-right"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        <Lock className="w-4 h-4" />
+                        تأكيد كلمة المرور
+                      </label>
+                      <Input
+                        type="password"
+                        value={signUpData.confirmPassword}
+                        onChange={(e) => setSignUpData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                        placeholder="أعد إدخال كلمة المرور"
+                        className="h-12 text-right"
+                        required
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full h-12 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? 'جارٍ إنشاء الحساب...' : 'إنشاء حساب'}
+                    </Button>
+                  </form>
+                </TabsContent>
+              </Tabs>
+            )}
           </CardContent>
         </Card>
       </div>
