@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Car, Lock, KeyRound } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const PasswordReset = () => {
   const { updatePassword } = useAuth();
@@ -15,25 +16,29 @@ const PasswordReset = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Check if we have valid reset parameters
+  // فحص معاملات إعادة تعيين كلمة المرور الصحيحة
   const hasValidResetParams = searchParams.get('type') === 'recovery';
 
   useEffect(() => {
+    // إذا لم تكن المعاملات صحيحة، توجيه المستخدم لصفحة الدخول
     if (!hasValidResetParams) {
       navigate('/auth');
+      toast.error('رابط إعادة تعيين كلمة المرور غير صحيح أو منتهي الصلاحية');
     }
   }, [hasValidResetParams, navigate]);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // التحقق من تطابق كلمات المرور
     if (newPassword !== confirmPassword) {
-      alert('كلمة المرور غير متطابقة');
+      toast.error('كلمة المرور غير متطابقة');
       return;
     }
     
+    // التحقق من طول كلمة المرور
     if (newPassword.length < 6) {
-      alert('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+      toast.error('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
       return;
     }
     
@@ -42,13 +47,15 @@ const PasswordReset = () => {
     setIsLoading(false);
     
     if (!error) {
-      // Redirect to home after successful password update
+      toast.success('تم تحديث كلمة المرور بنجاح!');
+      // التوجيه للصفحة الرئيسية بعد النجاح
       setTimeout(() => {
         navigate('/');
       }, 2000);
     }
   };
 
+  // إذا لم تكن المعاملات صحيحة، لا تعرض الصفحة
   if (!hasValidResetParams) {
     return null;
   }

@@ -1,34 +1,22 @@
 
-import { useState, useEffect } from 'react';
-import { Navigate, useSearchParams } from 'react-router-dom';
+import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Car, Mail, Lock, User, KeyRound } from 'lucide-react';
+import { Car, Mail, Lock, User } from 'lucide-react';
 
 const Auth = () => {
-  const { user, loading, signUp, signIn, resetPassword, updatePassword } = useAuth();
-  const [searchParams] = useSearchParams();
+  const { user, loading, signUp, signIn, resetPassword } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   
-  // Form states
+  // حالات النماذج
   const [signInData, setSignInData] = useState({ email: '', password: '' });
   const [signUpData, setSignUpData] = useState({ email: '', password: '', fullName: '', confirmPassword: '' });
-
-  // Check if we're in password reset mode
-  const isResetMode = searchParams.get('mode') === 'reset';
-
-  useEffect(() => {
-    if (isResetMode) {
-      setShowResetPassword(false);
-    }
-  }, [isResetMode]);
 
   if (loading) {
     return (
@@ -41,7 +29,7 @@ const Auth = () => {
     );
   }
 
-  if (user && !isResetMode) {
+  if (user) {
     return <Navigate to="/" replace />;
   }
 
@@ -75,94 +63,6 @@ const Auth = () => {
     setShowResetPassword(false);
     setResetEmail('');
   };
-
-  const handleUpdatePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPassword !== confirmPassword) {
-      alert('كلمة المرور غير متطابقة');
-      return;
-    }
-    if (newPassword.length < 6) {
-      alert('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
-      return;
-    }
-    setIsLoading(true);
-    const { error } = await updatePassword(newPassword);
-    setIsLoading(false);
-    if (!error) {
-      // Redirect to home after successful password update
-      window.location.href = '/';
-    }
-  };
-
-  // Password reset form
-  if (isResetMode) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4" dir="rtl">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg flex items-center justify-center">
-                <Car className="w-7 h-7 text-white" />
-              </div>
-              <h1 className="text-3xl font-bold text-blue-800">الكيرين</h1>
-            </div>
-            <p className="text-gray-600">موقع السيارات الأول في السودان</p>
-          </div>
-
-          <Card className="shadow-2xl border-0">
-            <CardHeader>
-              <CardTitle className="text-center text-2xl text-gray-800 flex items-center justify-center gap-2">
-                <KeyRound className="w-6 h-6" />
-                إعادة تعيين كلمة المرور
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleUpdatePassword} className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <Lock className="w-4 h-4" />
-                    كلمة المرور الجديدة
-                  </label>
-                  <Input
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="أدخل كلمة المرور الجديدة"
-                    className="h-12 text-right"
-                    required
-                    minLength={6}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <Lock className="w-4 h-4" />
-                    تأكيد كلمة المرور
-                  </label>
-                  <Input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="أعد إدخال كلمة المرور الجديدة"
-                    className="h-12 text-right"
-                    required
-                    minLength={6}
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  className="w-full h-12 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'جارٍ التحديث...' : 'تحديث كلمة المرور'}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4" dir="rtl">

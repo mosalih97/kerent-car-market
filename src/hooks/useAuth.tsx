@@ -23,22 +23,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener
+    // إعداد مستمع تغيير حالة المصادقة
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
+        console.log('تغيرت حالة المصادقة:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Handle password recovery
+        // التعامل مع استرداد كلمة المرور
         if (event === 'PASSWORD_RECOVERY') {
           toast.success('يمكنك الآن إدخال كلمة المرور الجديدة');
         }
       }
     );
 
-    // Check for existing session
+    // فحص الجلسة الموجودة
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -71,6 +71,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         arabicMessage = 'البريد الإلكتروني غير صحيح';
       } else if (error.message.includes('Password')) {
         arabicMessage = 'كلمة المرور ضعيفة جداً';
+      } else if (error.message.includes('weak')) {
+        arabicMessage = 'كلمة المرور ضعيفة جداً - يجب أن تحتوي على 6 أحرف على الأقل';
+      } else if (error.message.includes('signup')) {
+        arabicMessage = 'خطأ في إنشاء الحساب';
       }
       toast.error(arabicMessage);
     } else {
@@ -95,6 +99,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         arabicMessage = 'يرجى تأكيد البريد الإلكتروني أولاً';
       } else if (error.message.includes('Too many requests')) {
         arabicMessage = 'تم تجاوز عدد المحاولات المسموح، حاول لاحقاً';
+      } else if (error.message.includes('invalid_credentials')) {
+        arabicMessage = 'بيانات الدخول غير صحيحة';
+      } else if (error.message.includes('user_not_found')) {
+        arabicMessage = 'المستخدم غير موجود';
       }
       toast.error(arabicMessage);
     } else {
@@ -117,6 +125,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         arabicMessage = 'البريد الإلكتروني غير مسجل في النظام';
       } else if (error.message.includes('Too many requests')) {
         arabicMessage = 'تم تجاوز عدد المحاولات، حاول لاحقاً';
+      } else if (error.message.includes('rate_limit')) {
+        arabicMessage = 'تم إرسال عدد كبير من الطلبات، انتظر قليلاً ثم حاول مرة أخرى';
       }
       toast.error(arabicMessage);
     } else {
@@ -134,7 +144,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (error) {
       let arabicMessage = error.message;
       if (error.message.includes('weak')) {
-        arabicMessage = 'كلمة المرور ضعيفة جداً';
+        arabicMessage = 'كلمة المرور ضعيفة جداً - يجب أن تحتوي على 6 أحرف على الأقل';
+      } else if (error.message.includes('same_password')) {
+        arabicMessage = 'كلمة المرور الجديدة يجب أن تكون مختلفة عن السابقة';
+      } else if (error.message.includes('session')) {
+        arabicMessage = 'انتهت صلاحية الجلسة، يرجى طلب رابط جديد';
       }
       toast.error(arabicMessage);
     } else {
