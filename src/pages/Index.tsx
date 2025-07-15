@@ -118,7 +118,7 @@ const Index = () => {
                   
                   {/* Add Ad Button */}
                   <Button 
-                    onClick={() => setShowCreateModal(true)}
+                    onClick={() => user ? setShowCreateModal(true) : navigate('/auth')}
                     className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 hidden sm:flex"
                   >
                     <Plus className="w-4 h-4 ml-2" />
@@ -127,7 +127,7 @@ const Index = () => {
                   
                   {/* Mobile Add Ad Button */}
                   <Button 
-                    onClick={() => setShowCreateModal(true)}
+                    onClick={() => user ? setShowCreateModal(true) : navigate('/auth')}
                     size="sm"
                     className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 sm:hidden"
                   >
@@ -138,11 +138,11 @@ const Index = () => {
                   <Button 
                     variant="outline" 
                     className="hidden sm:flex relative"
-                    onClick={() => setShowMessagesModal(true)}
+                    onClick={() => user ? setShowMessagesModal(true) : navigate('/auth')}
                   >
                     <MessageCircle className="w-4 h-4 ml-2" />
                     الرسائل
-                    {unreadMessages > 0 && (
+                    {user && unreadMessages > 0 && (
                       <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
                         {unreadMessages}
                       </Badge>
@@ -154,10 +154,10 @@ const Index = () => {
                     variant="outline" 
                     size="sm" 
                     className="sm:hidden relative"
-                    onClick={() => setShowMessagesModal(true)}
+                    onClick={() => user ? setShowMessagesModal(true) : navigate('/auth')}
                   >
                     <MessageCircle className="w-4 h-4" />
-                    {unreadMessages > 0 && (
+                    {user && unreadMessages > 0 && (
                       <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
                         {unreadMessages}
                       </Badge>
@@ -168,11 +168,11 @@ const Index = () => {
                   <Button 
                     variant="outline" 
                     className="hidden sm:flex relative"
-                    onClick={() => setShowNotificationsModal(true)}
+                    onClick={() => user ? setShowNotificationsModal(true) : navigate('/auth')}
                   >
                     <Bell className="w-4 h-4 ml-2" />
                     الإشعارات
-                    {unreadNotifications > 0 && (
+                    {user && unreadNotifications > 0 && (
                       <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
                         {unreadNotifications}
                       </Badge>
@@ -184,10 +184,10 @@ const Index = () => {
                     variant="outline" 
                     size="sm" 
                     className="sm:hidden relative"
-                    onClick={() => setShowNotificationsModal(true)}
+                    onClick={() => user ? setShowNotificationsModal(true) : navigate('/auth')}
                   >
                     <Bell className="w-4 h-4" />
-                    {unreadNotifications > 0 && (
+                    {user && unreadNotifications > 0 && (
                       <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
                         {unreadNotifications}
                       </Badge>
@@ -609,9 +609,9 @@ const Index = () => {
         </div>
       </footer>
 
-      <CreateAdModal open={showCreateModal} onOpenChange={setShowCreateModal} />
-      <MessagesModal open={showMessagesModal} onOpenChange={setShowMessagesModal} />
-      <NotificationsModal open={showNotificationsModal} onOpenChange={setShowNotificationsModal} />
+      {user && <CreateAdModal open={showCreateModal} onOpenChange={setShowCreateModal} />}
+      {user && <MessagesModal open={showMessagesModal} onOpenChange={setShowMessagesModal} />}
+      {user && <NotificationsModal open={showNotificationsModal} onOpenChange={setShowNotificationsModal} />}
     </div>
   );
 };
