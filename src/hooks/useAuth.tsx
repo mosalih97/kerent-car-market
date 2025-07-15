@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,7 +25,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // إعداد مستمع تغيير حالة المصادقة
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         console.log('تغيرت حالة المصادقة:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
@@ -32,7 +33,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         // التعامل مع استرداد كلمة المرور
         if (event === 'PASSWORD_RECOVERY') {
+          console.log('تم استلام حدث استرداد كلمة المرور');
           toast.success('يمكنك الآن إدخال كلمة المرور الجديدة');
+        }
+
+        // التعامل مع تسجيل الدخول بعد إعادة تعيين كلمة المرور
+        if (event === 'SIGNED_IN' && session?.user) {
+          console.log('تم تسجيل الدخول بنجاح بعد إعادة التعيين');
         }
       }
     );
@@ -112,7 +119,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const resetPassword = async (email: string) => {
+    // استخدام الرابط الصحيح لإعادة تعيين كلمة المرور
     const redirectUrl = `${window.location.origin}/password-reset`;
+    
+    console.log('إرسال طلب إعادة تعيين كلمة المرور للبريد الإلكتروني:', email);
+    console.log('رابط إعادة التوجيه:', redirectUrl);
     
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: redirectUrl
@@ -128,14 +139,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         arabicMessage = 'تم إرسال عدد كبير من الطلبات، انتظر قليلاً ثم حاول مرة أخرى';
       }
       toast.error(arabicMessage);
+      console.error('خطأ في إرسال بريد إعادة التعيين:', error);
     } else {
       toast.success('تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني');
+      console.log('تم إرسال بريد إعادة تعيين كلمة المرور بنجاح');
     }
 
     return { error };
   };
 
   const updatePassword = async (password: string) => {
+    console.log('محاولة تحديث كلمة المرور');
+    
     const { error } = await supabase.auth.updateUser({
       password: password
     });
@@ -150,8 +165,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         arabicMessage = 'انتهت صلاحية الجلسة، يرجى طلب رابط جديد';
       }
       toast.error(arabicMessage);
+      console.error('خطأ في تحديث كلمة المرور:', error);
     } else {
       toast.success('تم تحديث كلمة المرور بنجاح');
+      console.log('تم تحديث كلمة المرور بنجاح');
     }
 
     return { error };

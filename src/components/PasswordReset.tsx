@@ -19,17 +19,28 @@ const PasswordReset = () => {
 
   // فحص معاملات إعادة تعيين كلمة المرور الصحيحة
   const hasValidResetParams = searchParams.get('type') === 'recovery';
+  const accessToken = searchParams.get('access_token');
+  const refreshToken = searchParams.get('refresh_token');
 
   useEffect(() => {
+    console.log('معاملات URL:', {
+      type: searchParams.get('type'),
+      access_token: accessToken ? 'موجود' : 'غير موجود',
+      refresh_token: refreshToken ? 'موجود' : 'غير موجود'
+    });
+
     // إذا لم تكن المعاملات صحيحة، توجيه المستخدم لصفحة الدخول
     if (!hasValidResetParams) {
+      console.log('معاملات غير صحيحة، إعادة توجيه للمصادقة');
       navigate('/auth');
       toast.error('رابط إعادة تعيين كلمة المرور غير صحيح أو منتهي الصلاحية');
     }
-  }, [hasValidResetParams, navigate]);
+  }, [hasValidResetParams, navigate, accessToken, refreshToken, searchParams]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    console.log('بدء عملية إعادة تعيين كلمة المرور');
     
     // التحقق من أن كلمة المرور غير فارغة
     if (!newPassword.trim()) {
@@ -52,18 +63,26 @@ const PasswordReset = () => {
     setIsLoading(true);
     setMessage('');
     
-    const { error } = await updatePassword(newPassword);
-    setIsLoading(false);
-    
-    if (error) {
-      setMessage(error.message || 'حدث خطأ أثناء تحديث كلمة المرور');
-    } else {
-      setMessage('تم تحديث كلمة المرور بنجاح!');
-      toast.success('تم تحديث كلمة المرور بنجاح!');
-      // التوجيه للصفحة الرئيسية بعد النجاح
-      setTimeout(() => {
-        navigate('/');
-      }, 2000);
+    try {
+      const { error } = await updatePassword(newPassword);
+      
+      if (error) {
+        console.error('خطأ في تحديث كلمة المرور:', error);
+        setMessage(error.message || 'حدث خطأ أثناء تحديث كلمة المرور');
+      } else {
+        console.log('تم تحديث كلمة المرور بنجاح');
+        setMessage('تم تحديث كلمة المرور بنجاح!');
+        toast.success('تم تحديث كلمة المرور بنجاح!');
+        // التوجيه للصفحة الرئيسية بعد النجاح
+        setTimeout(() => {
+          navigate('/');
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('خطأ غير متوقع:', error);
+      setMessage('حدث خطأ غير متوقع');
+    } finally {
+      setIsLoading(false);
     }
   };
 
