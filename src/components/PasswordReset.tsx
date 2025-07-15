@@ -15,6 +15,7 @@ const PasswordReset = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [message, setMessage] = useState('');
 
   // فحص معاملات إعادة تعيين كلمة المرور الصحيحة
   const hasValidResetParams = searchParams.get('type') === 'recovery';
@@ -27,26 +28,37 @@ const PasswordReset = () => {
     }
   }, [hasValidResetParams, navigate]);
 
-  const handleUpdatePassword = async (e: React.FormEvent) => {
+  const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // التحقق من أن كلمة المرور غير فارغة
+    if (!newPassword.trim()) {
+      setMessage('يرجى إدخال كلمة المرور الجديدة');
+      return;
+    }
     
     // التحقق من تطابق كلمات المرور
     if (newPassword !== confirmPassword) {
-      toast.error('كلمة المرور غير متطابقة');
+      setMessage('كلمة المرور غير متطابقة');
       return;
     }
     
     // التحقق من طول كلمة المرور
     if (newPassword.length < 6) {
-      toast.error('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+      setMessage('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
       return;
     }
     
     setIsLoading(true);
+    setMessage('');
+    
     const { error } = await updatePassword(newPassword);
     setIsLoading(false);
     
-    if (!error) {
+    if (error) {
+      setMessage(error.message || 'حدث خطأ أثناء تحديث كلمة المرور');
+    } else {
+      setMessage('تم تحديث كلمة المرور بنجاح!');
       toast.success('تم تحديث كلمة المرور بنجاح!');
       // التوجيه للصفحة الرئيسية بعد النجاح
       setTimeout(() => {
@@ -84,7 +96,7 @@ const PasswordReset = () => {
             </p>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleUpdatePassword} className="space-y-4">
+            <form onSubmit={handleResetPassword} className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                   <Lock className="w-4 h-4" />
@@ -120,9 +132,14 @@ const PasswordReset = () => {
                 className="w-full h-12 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
                 disabled={isLoading}
               >
-                {isLoading ? 'جارٍ التحديث...' : 'تحديث كلمة المرور'}
+                {isLoading ? 'جارٍ التحديث...' : 'تأكيد'}
               </Button>
             </form>
+            {message && (
+              <p className={`mt-4 text-center ${message.includes('بنجاح') ? 'text-green-600' : 'text-red-600'}`}>
+                {message}
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
