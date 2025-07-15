@@ -21,9 +21,9 @@ export const useMessages = () => {
         .from('messages')
         .select(`
           *,
-          sender:sender_id(id, email),
-          receiver:receiver_id(id, email),
-          ad:ad_id(id, title)
+          sender:profiles!messages_sender_id_fkey(id, full_name),
+          receiver:profiles!messages_receiver_id_fkey(id, full_name),
+          ad:ads(id, title)
         `)
         .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
         .order('created_at', { ascending: false });
@@ -73,7 +73,12 @@ export const useMessages = () => {
           content,
           ad_id: adId
         })
-        .select()
+        .select(`
+          *,
+          sender:profiles!messages_sender_id_fkey(id, full_name),
+          receiver:profiles!messages_receiver_id_fkey(id, full_name),
+          ad:ads(id, title)
+        `)
         .single();
       
       if (error) {

@@ -6,13 +6,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, MessageSquare, User, ArrowRight } from 'lucide-react';
+import { Send, MessageSquare, User } from 'lucide-react';
 import { useMessages } from '@/hooks/useMessages';
 import { useAuth } from '@/hooks/useAuth';
 
 interface MessagesModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+}
+
+interface ConversationData {
+  userId: string;
+  userName: string;
+  messages: any[];
+  lastMessage: any;
+  unreadCount: number;
 }
 
 const MessagesModal = ({ open, onOpenChange }: MessagesModalProps) => {
@@ -22,17 +30,20 @@ const MessagesModal = ({ open, onOpenChange }: MessagesModalProps) => {
   const [newMessage, setNewMessage] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  console.log('All messages:', messages);
+  console.log('All messages in modal:', messages);
 
   // Group messages by conversation
-  const conversations = messages?.reduce((acc: any, message: any) => {
-    const otherUserId = message.sender_id === user?.id ? message.receiver_id : message.sender_id;
-    const otherUser = message.sender_id === user?.id ? message.receiver : message.sender;
+  const conversations: Record<string, ConversationData> = messages?.reduce((acc: any, message: any) => {
+    const isUserSender = message.sender_id === user?.id;
+    const otherUserId = isUserSender ? message.receiver_id : message.sender_id;
+    const otherUserName = isUserSender 
+      ? (message.receiver?.full_name || 'مستخدم') 
+      : (message.sender?.full_name || 'مستخدم');
     
     if (!acc[otherUserId]) {
       acc[otherUserId] = {
         userId: otherUserId,
-        user: otherUser,
+        userName: otherUserName,
         messages: [],
         lastMessage: message,
         unreadCount: 0
@@ -93,6 +104,7 @@ const MessagesModal = ({ open, onOpenChange }: MessagesModalProps) => {
   };
 
   const selectedConversationData = selectedConversation ? conversations[selectedConversation] : null;
+  const conversationsList = Object.values(conversations);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -108,8 +120,8 @@ const MessagesModal = ({ open, onOpenChange }: MessagesModalProps) => {
           {/* Conversations List */}
           <div className="w-1/3 border-l border-gray-200 pl-4">
             <ScrollArea className="h-full">
-              {Object.values(conversations).length > 0 ? (
-                Object.values(conversations).map((conversation: any) => (
+              {conversationsList.length > 0 ? (
+                conversationsList.map((conversation) => (
                   <div
                     key={conversation.userId}
                     className={`p-3 rounded-lg cursor-pointer hover:bg-gray-50 mb-2 transition-colors ${
@@ -126,7 +138,7 @@ const MessagesModal = ({ open, onOpenChange }: MessagesModalProps) => {
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
                           <span className="font-medium text-sm">
-                            {conversation.user?.email || 'مستخدم'}
+                            {conversation.userName}
                           </span>
                           {conversation.unreadCount > 0 && (
                             <Badge variant="destructive" className="text-xs">
@@ -166,7 +178,7 @@ const MessagesModal = ({ open, onOpenChange }: MessagesModalProps) => {
                   </Avatar>
                   <div>
                     <h3 className="font-medium">
-                      {selectedConversationData.user?.email || 'مستخدم'}
+                      {selectedConversationData.userName}
                     </h3>
                     <p className="text-sm text-gray-500">
                       {selectedConversationData.messages.length} رسالة
@@ -182,7 +194,7 @@ const MessagesModal = ({ open, onOpenChange }: MessagesModalProps) => {
                       .map((message: any) => (
                         <div
                           key={message.id}
-                          className={`flex ${message.sender_id === user?.id ? 'justify-start' : 'justify-end'}`}
+                          className={`flex ${message.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}
                         >
                           <div
                             className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
@@ -237,7 +249,7 @@ const MessagesModal = ({ open, onOpenChange }: MessagesModalProps) => {
                 <div className="text-center">
                   <MessageSquare className="w-12 h-12 mx-auto mb-4 text-gray-400" />
                   <p>اختر محادثة لعرضها</p>
-                  {Object.values(conversations).length > 0 && (
+                  {conversationsList.length > 0 && (
                     <p className="text-sm text-gray-400 mt-2">
                       انقر على إحدى المحادثات في القائمة للبدء
                     </p>
