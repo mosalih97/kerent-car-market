@@ -36,9 +36,14 @@ const MessagesModal = ({ open, onOpenChange }: MessagesModalProps) => {
   const conversations: Record<string, ConversationData> = messages?.reduce((acc: any, message: any) => {
     const isUserSender = message.sender_id === user?.id;
     const otherUserId = isUserSender ? message.receiver_id : message.sender_id;
-    const otherUserName = isUserSender 
-      ? (message.receiver?.full_name || 'مستخدم') 
-      : (message.sender?.full_name || 'مستخدم');
+    
+    // Get other user name safely
+    let otherUserName = 'مستخدم';
+    if (isUserSender && message.receiver && message.receiver.full_name) {
+      otherUserName = message.receiver.full_name;
+    } else if (!isUserSender && message.sender && message.sender.full_name) {
+      otherUserName = message.sender.full_name;
+    }
     
     if (!acc[otherUserId]) {
       acc[otherUserId] = {
