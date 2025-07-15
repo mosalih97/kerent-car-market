@@ -21,8 +21,8 @@ export const useMessages = () => {
         .from('messages')
         .select(`
           *,
-          sender:sender_id(id, full_name),
-          receiver:receiver_id(id, full_name),
+          sender:profiles!messages_sender_id_fkey(id, full_name),
+          receiver:profiles!messages_receiver_id_fkey(id, full_name),
           ad:ads(id, title)
         `)
         .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
@@ -75,8 +75,8 @@ export const useMessages = () => {
         })
         .select(`
           *,
-          sender:sender_id(id, full_name),
-          receiver:receiver_id(id, full_name),
+          sender:profiles!messages_sender_id_fkey(id, full_name),
+          receiver:profiles!messages_receiver_id_fkey(id, full_name),
           ad:ads(id, title)
         `)
         .single();
