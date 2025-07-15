@@ -7,17 +7,31 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useMyAds, useDeleteAd } from '@/hooks/useAds';
 import { useProfile } from '@/hooks/useProfile';
+import { useMessages } from '@/hooks/useMessages';
+import { useNotifications } from '@/hooks/useNotifications';
 import { useNavigate } from 'react-router-dom';
 import CreateAdModal from './CreateAdModal';
 import PremiumCard from './PremiumCard';
+import MessagesModal from './MessagesModal';
+import NotificationsModal from './NotificationsModal';
+import EditAdModal from './EditAdModal';
+import AccountSettingsModal from './AccountSettingsModal';
 
 const UserDashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { data: myAds, isLoading } = useMyAds();
   const { profile, isLoading: profileLoading } = useProfile();
+  const { unreadCount: unreadMessages } = useMessages();
+  const { unreadCount: unreadNotifications } = useNotifications();
   const deleteAdMutation = useDeleteAd();
+  
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showMessagesModal, setShowMessagesModal] = useState(false);
+  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [selectedAd, setSelectedAd] = useState<any>(null);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ar-SD').format(price);
@@ -34,9 +48,14 @@ const UserDashboard = () => {
     }
   };
 
+  const handleEditAd = (ad: any) => {
+    setSelectedAd(ad);
+    setShowEditModal(true);
+  };
+
   const handleSignOut = async () => {
     await signOut();
-    navigate('/'); // إعادة توجيه إلى الصفحة الرئيسية بعد تسجيل الخروج
+    navigate('/');
   };
 
   if (profileLoading) {
@@ -89,13 +108,23 @@ const UserDashboard = () => {
               <Plus className="w-4 h-4" />
               إعلاناتي
             </TabsTrigger>
-            <TabsTrigger value="messages" className="flex items-center gap-2">
+            <TabsTrigger value="messages" className="flex items-center gap-2 relative">
               <MessageSquare className="w-4 h-4" />
               الرسائل
+              {unreadMessages > 0 && (
+                <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
+                  {unreadMessages}
+                </Badge>
+              )}
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <TabsTrigger value="notifications" className="flex items-center gap-2 relative">
               <Bell className="w-4 h-4" />
               الإشعارات
+              {unreadNotifications > 0 && (
+                <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
+                  {unreadNotifications}
+                </Badge>
+              )}
             </TabsTrigger>
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <User className="w-4 h-4" />
@@ -206,13 +235,17 @@ const UserDashboard = () => {
                 <CardTitle className="flex items-center gap-2">
                   <MessageSquare className="w-5 h-5" />
                   الرسائل
+                  {unreadMessages > 0 && (
+                    <Badge variant="destructive">{unreadMessages} جديد</Badge>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-center py-12">
-                  <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-600 mb-2">لا توجد رسائل</h3>
-                  <p className="text-gray-500">ستظهر رسائلك هنا</p>
+                  <Button onClick={() => setShowMessagesModal(true)} className="bg-blue-600 hover:bg-blue-700">
+                    <MessageSquare className="w-4 h-4 ml-2" />
+                    فتح الرسائل
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -224,13 +257,17 @@ const UserDashboard = () => {
                 <CardTitle className="flex items-center gap-2">
                   <Bell className="w-5 h-5" />
                   الإشعارات
+                  {unreadNotifications > 0 && (
+                    <Badge variant="destructive">{unreadNotifications} جديد</Badge>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-center py-12">
-                  <Bell className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-600 mb-2">لا توجد إشعارات</h3>
-                  <p className="text-gray-500">ستظهر إشعاراتك هنا</p>
+                  <Button onClick={() => setShowNotificationsModal(true)} className="bg-blue-600 hover:bg-blue-700">
+                    <Bell className="w-4 h-4 ml-2" />
+                    فتح الإشعارات
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -299,7 +336,11 @@ const UserDashboard = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                    onClick={() => setShowSettingsModal(true)}
+                  >
                     <Edit className="w-4 h-4 ml-2" />
                     تعديل المعلومات الشخصية
                   </Button>
@@ -329,6 +370,16 @@ const UserDashboard = () => {
       </div>
 
       <CreateAdModal open={showCreateModal} onOpenChange={setShowCreateModal} />
+      <MessagesModal open={showMessagesModal} onOpenChange={setShowMessagesModal} />
+      <NotificationsModal open={showNotificationsModal} onOpenChange={setShowNotificationsModal} />
+      <AccountSettingsModal open={showSettingsModal} onOpenChange={setShowSettingsModal} />
+      {selectedAd && (
+        <EditAdModal 
+          open={showEditModal} 
+          onOpenChange={setShowEditModal}
+          ad={selectedAd}
+        />
+      )}
     </div>
   );
 };
