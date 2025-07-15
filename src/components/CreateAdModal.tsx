@@ -146,6 +146,7 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
         condition: data.condition,
         city: data.localCity?.trim() ? `${data.city} - ${data.localCity.trim()}` : data.city,
         phone: data.phone.trim(),
+        whatsapp: data.whatsapp.trim(),
         images: imageUrls,
       };
 

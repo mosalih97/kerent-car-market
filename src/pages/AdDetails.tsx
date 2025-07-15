@@ -1,30 +1,64 @@
 
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowRight, MapPin, Calendar, Gauge, Phone, Star, Eye, Heart } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ArrowRight, MapPin, Calendar, Gauge, Phone, Star, Eye, Heart, MessageCircle, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
+import { useMessages } from '@/hooks/useMessages';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
 
 type Ad = Database['public']['Tables']['ads']['Row'] & {
   profiles: Database['public']['Tables']['profiles']['Row'];
+  whatsapp?: string;
 };
 
 const AdDetails = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const { credits, deductCredit, refreshCredits } = useCredits();
+  const { sendMessage, isSending } = useMessages();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  
   const [ad, setAd] = useState<Ad | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showContactInfo, setShowContactInfo] = useState(false);
   const [isRevealing, setIsRevealing] = useState(false);
+  const [messageContent, setMessageContent] = useState('');
+  const [showMessageBox, setShowMessageBox] = useState(false);
+
+  // إخفاء التفاصيل عند مغادرة الصفحة
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      setShowContactInfo(false);
+      setShowMessageBox(false);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setShowContactInfo(false);
+        setShowMessageBox(false);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      // إخفاء التفاصيل عند إلغاء تحميل المكون
+      setShowContactInfo(false);
+      setShowMessageBox(false);
+    };
+  }, []);
 
   useEffect(() => {
     fetchAd();
@@ -206,6 +240,75 @@ const AdDetails = () => {
     }
   };
 
+  const handleSendMessage = async () => {
+    if (!user || !ad) {
+      toast({
+        title: "خطأ",
+        description: "يجب تسجيل الدخول أولاً",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!messageContent.trim()) {
+      toast({
+        title: "خطأ",
+        description: "يرجى كتابة رسالة",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (credits < 1) {
+      toast({
+        title: "رصيد غير كافي",
+        description: "ليس لديك كريديت كافي لإرسال رسالة",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // خصم الكريديت أولاً
+      const creditDeducted = await deductCredit();
+      
+      if (!creditDeducted) {
+        throw new Error('فشل في خصم الكريديت');
+      }
+
+      // إرسال الرسالة
+      sendMessage({
+        receiverId: ad.user_id,
+        content: messageContent,
+        adId: ad.id
+      });
+
+      setMessageContent('');
+      setShowMessageBox(false);
+      toast({
+        title: "تم بنجاح",
+        description: "تم إرسال الرسالة",
+      });
+
+    } catch (error) {
+      console.error('Error sending message:', error);
+      await refreshCredits(); // إعادة تحديث الكريديت في حالة الخطأ
+      const errorMessage = error instanceof Error ? error.message : 'حدث خطأ غير متوقع';
+      toast({
+        title: "خطأ",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const openWhatsApp = () => {
+    if (ad?.whatsapp) {
+      const whatsappUrl = `https://wa.me/${ad.whatsapp.replace(/[^\d]/g, '')}?text=${encodeURIComponent(`مرحبا، أنا مهتم بإعلانك: ${ad.title}`)}`;
+      window.open(whatsappUrl, '_blank');
+    }
+  };
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ar-SD').format(price);
   };
@@ -377,20 +480,31 @@ const AdDetails = () => {
                 {user && user.id !== ad.user_id ? (
                   <div className="space-y-3">
                     {showContactInfo ? (
-                      <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                        <div className="flex items-center gap-2 text-green-800">
-                          <Phone className="w-4 h-4" />
-                          <span className="font-medium text-lg" dir="ltr">{ad.phone}</span>
+                      <div className="space-y-3">
+                        <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                          <div className="flex items-center gap-2 text-green-800 mb-2">
+                            <Phone className="w-4 h-4" />
+                            <span className="font-medium text-lg" dir="ltr">{ad.phone}</span>
+                          </div>
+                          {ad.whatsapp && (
+                            <button
+                              onClick={openWhatsApp}
+                              className="w-full mt-2 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                            >
+                              <MessageCircle className="w-4 h-4" />
+                              محادثة واتساب
+                            </button>
+                          )}
+                          <p className="text-sm text-green-600 mt-2">
+                            يمكنك الآن الاتصال بالبائع
+                          </p>
                         </div>
-                        <p className="text-sm text-green-600 mt-2">
-                          يمكنك الآن الاتصال بالبائع على هذا الرقم
-                        </p>
                       </div>
                     ) : (
                       <div className="space-y-3">
                         <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                           <p className="text-sm text-blue-800 mb-2">
-                            اضغط لإظهار رقم الهاتف (يتطلب 1 كريديت)
+                            اضغط لإظهار معلومات الاتصال (يتطلب 1 كريديت)
                           </p>
                           <p className="text-sm text-blue-600">
                             رصيدك الحالي: {credits} كريديت
@@ -402,10 +516,63 @@ const AdDetails = () => {
                           className="w-full"
                         >
                           <Phone className="w-4 h-4 ml-2" />
-                          {isRevealing ? 'جاري الإظهار...' : 'إظهار رقم الهاتف (1 كريديت)'}
+                          {isRevealing ? 'جاري الإظهار...' : 'إظهار معلومات الاتصال (1 كريديت)'}
                         </Button>
                       </div>
                     )}
+
+                    {/* صندوق الرسائل */}
+                    <div className="space-y-3">
+                      {!showMessageBox ? (
+                        <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                          <p className="text-sm text-purple-800 mb-2">
+                            أرسل رسالة للبائع (يتطلب 1 كريديت)
+                          </p>
+                          <p className="text-sm text-purple-600 mb-3">
+                            رصيدك الحالي: {credits} كريديت
+                          </p>
+                          <Button 
+                            onClick={() => setShowMessageBox(true)}
+                            disabled={credits < 1}
+                            variant="outline"
+                            className="w-full border-purple-300 text-purple-700 hover:bg-purple-100"
+                          >
+                            <Send className="w-4 h-4 ml-2" />
+                            إرسال رسالة (1 كريديت)
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                          <h4 className="font-medium text-purple-800 mb-3">إرسال رسالة للبائع</h4>
+                          <Textarea
+                            value={messageContent}
+                            onChange={(e) => setMessageContent(e.target.value)}
+                            placeholder="اكتب رسالتك هنا..."
+                            className="mb-3"
+                            rows={3}
+                          />
+                          <div className="flex gap-2">
+                            <Button
+                              onClick={handleSendMessage}
+                              disabled={isSending || !messageContent.trim() || credits < 1}
+                              className="flex-1"
+                            >
+                              <Send className="w-4 h-4 ml-2" />
+                              {isSending ? 'جاري الإرسال...' : 'إرسال (1 كريديت)'}
+                            </Button>
+                            <Button
+                              onClick={() => {
+                                setShowMessageBox(false);
+                                setMessageContent('');
+                              }}
+                              variant="outline"
+                            >
+                              إلغاء
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ) : user && user.id === ad.user_id ? (
                   <div className="p-4 bg-blue-50 rounded-lg">
@@ -414,6 +581,12 @@ const AdDetails = () => {
                       <Phone className="w-4 h-4" />
                       <span className="font-medium" dir="ltr">{ad.phone}</span>
                     </div>
+                    {ad.whatsapp && (
+                      <div className="flex items-center gap-2 text-blue-600 mt-1">
+                        <MessageCircle className="w-4 h-4" />
+                        <span className="font-medium" dir="ltr">{ad.whatsapp}</span>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="p-4 bg-gray-50 rounded-lg">
