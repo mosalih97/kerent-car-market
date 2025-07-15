@@ -15,6 +15,8 @@ export const useMessages = () => {
     queryFn: async () => {
       if (!user?.id) return [];
       
+      console.log('Fetching messages for user:', user.id);
+      
       const { data, error } = await supabase
         .from('messages')
         .select(`
@@ -26,8 +28,13 @@ export const useMessages = () => {
         .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error('Error fetching messages:', error);
+        throw error;
+      }
+      
+      console.log('Fetched messages:', data);
+      return data || [];
     },
     enabled: !!user?.id,
   });
@@ -43,7 +50,12 @@ export const useMessages = () => {
         .eq('receiver_id', user.id)
         .eq('is_read', false);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching unread count:', error);
+        throw error;
+      }
+      
+      console.log('Unread messages count:', count);
       return count || 0;
     },
     enabled: !!user?.id,
@@ -51,6 +63,8 @@ export const useMessages = () => {
 
   const sendMessageMutation = useMutation({
     mutationFn: async ({ receiverId, content, adId }: { receiverId: string; content: string; adId?: string }) => {
+      console.log('Sending message:', { receiverId, content, adId });
+      
       const { data, error } = await supabase
         .from('messages')
         .insert({
@@ -62,17 +76,24 @@ export const useMessages = () => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error sending message:', error);
+        throw error;
+      }
+      
+      console.log('Message sent successfully:', data);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['messages'] });
+      queryClient.invalidateQueries({ queryKey: ['messages-unread'] });
       toast({
         title: "تم إرسال الرسالة",
         description: "تم إرسال رسالتك بنجاح",
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Failed to send message:', error);
       toast({
         title: "خطأ",
         description: "فشل في إرسال الرسالة",
@@ -83,12 +104,19 @@ export const useMessages = () => {
 
   const markAsReadMutation = useMutation({
     mutationFn: async (messageId: string) => {
+      console.log('Marking message as read:', messageId);
+      
       const { error } = await supabase
         .from('messages')
         .update({ is_read: true })
         .eq('id', messageId);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error marking message as read:', error);
+        throw error;
+      }
+      
+      console.log('Message marked as read successfully');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['messages'] });
@@ -99,6 +127,8 @@ export const useMessages = () => {
   // Listen for real-time updates
   useEffect(() => {
     if (!user?.id) return;
+
+    console.log('Setting up real-time listener for messages');
 
     const channel = supabase
       .channel('messages-changes')
@@ -111,21 +141,30 @@ export const useMessages = () => {
           filter: `or(sender_id.eq.${user.id},receiver_id.eq.${user.id})`
         },
         (payload) => {
-          console.log('Message update:', payload);
+          console.log('Real-time message update:', payload);
           queryClient.invalidateQueries({ queryKey: ['messages'] });
           queryClient.invalidateQueries({ queryKey: ['messages-unread'] });
+          
+          // Show toast for new messages
+          if (payload.eventType === 'INSERT' && payload.new.receiver_id === user.id) {
+            toast({
+              title: "رسالة جديدة",
+              description: "لديك رسالة جديدة",
+            });
+          }
         }
       )
       .subscribe();
 
     return () => {
+      console.log('Cleaning up real-time listener');
       supabase.removeChannel(channel);
     };
-  }, [user?.id, queryClient]);
+  }, [user?.id, queryClient, toast]);
 
   return {
-    messages,
-    unreadCount,
+    messages: messages || [],
+    unreadCount: unreadCount || 0,
     isLoading,
     sendMessage: sendMessageMutation.mutate,
     markAsRead: markAsReadMutation.mutate,

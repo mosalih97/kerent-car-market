@@ -1,13 +1,12 @@
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, MessageSquare, User } from 'lucide-react';
+import { Send, MessageSquare, User, ArrowRight } from 'lucide-react';
 import { useMessages } from '@/hooks/useMessages';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -21,7 +20,11 @@ const MessagesModal = ({ open, onOpenChange }: MessagesModalProps) => {
   const { messages, sendMessage, markAsRead, isSending } = useMessages();
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState('');
+  const scrollRef = useRef<HTMLDivElement>(null);
 
+  console.log('All messages:', messages);
+
+  // Group messages by conversation
   const conversations = messages?.reduce((acc: any, message: any) => {
     const otherUserId = message.sender_id === user?.id ? message.receiver_id : message.sender_id;
     const otherUser = message.sender_id === user?.id ? message.receiver : message.sender;
@@ -32,10 +35,18 @@ const MessagesModal = ({ open, onOpenChange }: MessagesModalProps) => {
         user: otherUser,
         messages: [],
         lastMessage: message,
+        unreadCount: 0
       };
     }
     
     acc[otherUserId].messages.push(message);
+    
+    // Count unread messages in this conversation
+    if (message.receiver_id === user?.id && !message.is_read) {
+      acc[otherUserId].unreadCount++;
+    }
+    
+    // Update last message if this one is newer
     if (new Date(message.created_at) > new Date(acc[otherUserId].lastMessage.created_at)) {
       acc[otherUserId].lastMessage = message;
     }
@@ -43,8 +54,19 @@ const MessagesModal = ({ open, onOpenChange }: MessagesModalProps) => {
     return acc;
   }, {}) || {};
 
+  console.log('Grouped conversations:', conversations);
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [selectedConversation, conversations]);
+
   const handleSendMessage = () => {
     if (!newMessage.trim() || !selectedConversation) return;
+    
+    console.log('Sending message to:', selectedConversation, 'Content:', newMessage);
     
     sendMessage({
       receiverId: selectedConversation,
@@ -54,11 +76,23 @@ const MessagesModal = ({ open, onOpenChange }: MessagesModalProps) => {
     setNewMessage('');
   };
 
-  const handleMessageClick = (message: any) => {
-    if (message.receiver_id === user?.id && !message.is_read) {
-      markAsRead(message.id);
+  const handleConversationClick = (conversationId: string) => {
+    console.log('Opening conversation:', conversationId);
+    setSelectedConversation(conversationId);
+    
+    // Mark all messages in this conversation as read
+    const conversation = conversations[conversationId];
+    if (conversation) {
+      conversation.messages.forEach((message: any) => {
+        if (message.receiver_id === user?.id && !message.is_read) {
+          console.log('Marking message as read:', message.id);
+          markAsRead(message.id);
+        }
+      });
     }
   };
+
+  const selectedConversationData = selectedConversation ? conversations[selectedConversation] : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -71,17 +105,17 @@ const MessagesModal = ({ open, onOpenChange }: MessagesModalProps) => {
         </DialogHeader>
         
         <div className="flex h-full">
-          {/* المحادثات */}
+          {/* Conversations List */}
           <div className="w-1/3 border-l border-gray-200 pl-4">
             <ScrollArea className="h-full">
               {Object.values(conversations).length > 0 ? (
                 Object.values(conversations).map((conversation: any) => (
                   <div
                     key={conversation.userId}
-                    className={`p-3 rounded-lg cursor-pointer hover:bg-gray-50 mb-2 ${
+                    className={`p-3 rounded-lg cursor-pointer hover:bg-gray-50 mb-2 transition-colors ${
                       selectedConversation === conversation.userId ? 'bg-blue-50 border border-blue-200' : ''
                     }`}
-                    onClick={() => setSelectedConversation(conversation.userId)}
+                    onClick={() => handleConversationClick(conversation.userId)}
                   >
                     <div className="flex items-center gap-3">
                       <Avatar>
@@ -94,13 +128,17 @@ const MessagesModal = ({ open, onOpenChange }: MessagesModalProps) => {
                           <span className="font-medium text-sm">
                             {conversation.user?.email || 'مستخدم'}
                           </span>
-                          {!conversation.lastMessage.is_read && 
-                           conversation.lastMessage.receiver_id === user?.id && (
-                            <Badge variant="secondary" className="text-xs">جديد</Badge>
+                          {conversation.unreadCount > 0 && (
+                            <Badge variant="destructive" className="text-xs">
+                              {conversation.unreadCount}
+                            </Badge>
                           )}
                         </div>
-                        <p className="text-xs text-gray-600 truncate">
+                        <p className="text-xs text-gray-600 truncate mt-1">
                           {conversation.lastMessage.content}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {new Date(conversation.lastMessage.created_at).toLocaleString('ar-SD')}
                         </p>
                       </div>
                     </div>
@@ -115,42 +153,69 @@ const MessagesModal = ({ open, onOpenChange }: MessagesModalProps) => {
             </ScrollArea>
           </div>
 
-          {/* المحادثة المحددة */}
+          {/* Selected Conversation */}
           <div className="flex-1 flex flex-col pr-4">
-            {selectedConversation ? (
+            {selectedConversationData ? (
               <>
-                <ScrollArea className="flex-1 mb-4">
-                  {conversations[selectedConversation]?.messages
-                    .sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-                    .map((message: any) => (
-                      <div
-                        key={message.id}
-                        className={`mb-4 ${message.sender_id === user?.id ? 'text-left' : 'text-right'}`}
-                        onClick={() => handleMessageClick(message)}
-                      >
+                {/* Conversation Header */}
+                <div className="flex items-center gap-3 pb-4 border-b border-gray-200 mb-4">
+                  <Avatar>
+                    <AvatarFallback>
+                      <User className="w-4 h-4" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h3 className="font-medium">
+                      {selectedConversationData.user?.email || 'مستخدم'}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {selectedConversationData.messages.length} رسالة
+                    </p>
+                  </div>
+                </div>
+
+                {/* Messages */}
+                <ScrollArea className="flex-1 mb-4" ref={scrollRef}>
+                  <div className="space-y-4">
+                    {selectedConversationData.messages
+                      .sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+                      .map((message: any) => (
                         <div
-                          className={`inline-block max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                            message.sender_id === user?.id
-                              ? 'bg-blue-500 text-white'
-                              : 'bg-gray-200 text-gray-800'
-                          }`}
+                          key={message.id}
+                          className={`flex ${message.sender_id === user?.id ? 'justify-start' : 'justify-end'}`}
                         >
-                          <p className="text-sm">{message.content}</p>
-                          <p className="text-xs mt-1 opacity-70">
-                            {new Date(message.created_at).toLocaleTimeString('ar-SD')}
-                          </p>
+                          <div
+                            className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                              message.sender_id === user?.id
+                                ? 'bg-blue-500 text-white'
+                                : 'bg-gray-200 text-gray-800'
+                            }`}
+                          >
+                            <p className="text-sm">{message.content}</p>
+                            <div className="flex items-center justify-between mt-1">
+                              <p className="text-xs opacity-70">
+                                {new Date(message.created_at).toLocaleTimeString('ar-SD')}
+                              </p>
+                              {message.sender_id === user?.id && (
+                                <span className="text-xs opacity-70">
+                                  {message.is_read ? '✓✓' : '✓'}
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    ))
-                  }
+                      ))
+                    }
+                  </div>
                 </ScrollArea>
                 
+                {/* Message Input */}
                 <div className="flex gap-2">
                   <Textarea
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="اكتب رسالتك..."
-                    className="flex-1 min-h-[40px] max-h-[120px]"
+                    className="flex-1 min-h-[40px] max-h-[120px] resize-none"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
@@ -158,7 +223,11 @@ const MessagesModal = ({ open, onOpenChange }: MessagesModalProps) => {
                       }
                     }}
                   />
-                  <Button onClick={handleSendMessage} disabled={isSending || !newMessage.trim()}>
+                  <Button 
+                    onClick={handleSendMessage} 
+                    disabled={isSending || !newMessage.trim()}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
                     <Send className="w-4 h-4" />
                   </Button>
                 </div>
@@ -168,6 +237,11 @@ const MessagesModal = ({ open, onOpenChange }: MessagesModalProps) => {
                 <div className="text-center">
                   <MessageSquare className="w-12 h-12 mx-auto mb-4 text-gray-400" />
                   <p>اختر محادثة لعرضها</p>
+                  {Object.values(conversations).length > 0 && (
+                    <p className="text-sm text-gray-400 mt-2">
+                      انقر على إحدى المحادثات في القائمة للبدء
+                    </p>
+                  )}
                 </div>
               </div>
             )}

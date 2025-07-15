@@ -33,6 +33,9 @@ const UserDashboard = () => {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [selectedAd, setSelectedAd] = useState<any>(null);
 
+  console.log('Dashboard - Unread messages:', unreadMessages);
+  console.log('Dashboard - Unread notifications:', unreadNotifications);
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ar-SD').format(price);
   };
@@ -133,6 +136,7 @@ const UserDashboard = () => {
           </TabsList>
 
           <TabsContent value="ads" className="space-y-6">
+            
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-semibold">إعلاناتي</h2>
               <Button 
@@ -194,7 +198,12 @@ const UserDashboard = () => {
                       </p>
                       
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline" className="flex-1">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="flex-1"
+                          onClick={() => handleEditAd(ad)}
+                        >
                           <Edit className="w-4 h-4 ml-2" />
                           تعديل
                         </Button>
@@ -232,26 +241,41 @@ const UserDashboard = () => {
           <TabsContent value="messages" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5" />
-                  الرسائل
-                  {unreadMessages > 0 && (
-                    <Badge variant="destructive">{unreadMessages} جديد</Badge>
-                  )}
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="w-5 h-5" />
+                    الرسائل
+                  </div>
+                  <Button 
+                    onClick={() => setShowMessagesModal(true)} 
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <MessageSquare className="w-4 h-4 ml-2" />
+                    فتح الرسائل
+                    {unreadMessages > 0 && (
+                      <Badge variant="destructive" className="mr-2">
+                        {unreadMessages}
+                      </Badge>
+                    )}
+                  </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12">
-                  <Button onClick={() => setShowMessagesModal(true)} className="bg-blue-600 hover:bg-blue-700">
-                    <MessageSquare className="w-4 h-4 ml-2" />
-                    فتح الرسائل
-                  </Button>
+                <div className="text-center py-8">
+                  <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                    {unreadMessages > 0 ? `لديك ${unreadMessages} رسالة جديدة` : 'الرسائل'}
+                  </h3>
+                  <p className="text-gray-500 mb-4">
+                    {unreadMessages > 0 ? 'انقر على "فتح الرسائل" لقراءة رسائلك الجديدة' : 'تواصل مع البائعين والمشترين'}
+                  </p>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="notifications" className="space-y-6">
+            
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -274,6 +298,7 @@ const UserDashboard = () => {
           </TabsContent>
 
           <TabsContent value="profile" className="space-y-6">
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
