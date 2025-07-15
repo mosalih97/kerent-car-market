@@ -15,81 +15,67 @@ const PasswordReset = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [message, setMessage] = useState('');
 
-  // فحص معاملات إعادة تعيين كلمة المرور الصحيحة
-  const hasValidResetParams = searchParams.get('type') === 'recovery';
-  const accessToken = searchParams.get('access_token');
-  const refreshToken = searchParams.get('refresh_token');
+  console.log('PasswordReset component loaded');
+  console.log('URL params:', Object.fromEntries(searchParams.entries()));
 
   useEffect(() => {
-    console.log('معاملات URL:', {
-      type: searchParams.get('type'),
-      access_token: accessToken ? 'موجود' : 'غير موجود',
-      refresh_token: refreshToken ? 'موجود' : 'غير موجود'
-    });
+    // فحص إذا كان المستخدم وصل من رابط صحيح
+    const type = searchParams.get('type');
+    const accessToken = searchParams.get('access_token');
+    
+    console.log('Recovery type:', type);
+    console.log('Access token exists:', !!accessToken);
 
-    // إذا لم تكن المعاملات صحيحة، توجيه المستخدم لصفحة الدخول
-    if (!hasValidResetParams) {
-      console.log('معاملات غير صحيحة، إعادة توجيه للمصادقة');
-      navigate('/auth');
+    if (type !== 'recovery' || !accessToken) {
+      console.log('Invalid recovery link, redirecting to auth');
       toast.error('رابط إعادة تعيين كلمة المرور غير صحيح أو منتهي الصلاحية');
+      navigate('/auth');
     }
-  }, [hasValidResetParams, navigate, accessToken, refreshToken, searchParams]);
+  }, [searchParams, navigate]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('بدء عملية إعادة تعيين كلمة المرور');
+    console.log('Starting password reset process');
     
-    // التحقق من أن كلمة المرور غير فارغة
     if (!newPassword.trim()) {
-      setMessage('يرجى إدخال كلمة المرور الجديدة');
+      toast.error('يرجى إدخال كلمة المرور الجديدة');
       return;
     }
     
-    // التحقق من تطابق كلمات المرور
     if (newPassword !== confirmPassword) {
-      setMessage('كلمة المرور غير متطابقة');
+      toast.error('كلمة المرور غير متطابقة');
       return;
     }
     
-    // التحقق من طول كلمة المرور
     if (newPassword.length < 6) {
-      setMessage('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+      toast.error('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
       return;
     }
     
     setIsLoading(true);
-    setMessage('');
     
     try {
       const { error } = await updatePassword(newPassword);
       
       if (error) {
-        console.error('خطأ في تحديث كلمة المرور:', error);
-        setMessage(error.message || 'حدث خطأ أثناء تحديث كلمة المرور');
+        console.error('Password update error:', error);
+        toast.error(error.message || 'حدث خطأ أثناء تحديث كلمة المرور');
       } else {
-        console.log('تم تحديث كلمة المرور بنجاح');
-        setMessage('تم تحديث كلمة المرور بنجاح!');
+        console.log('Password updated successfully');
         toast.success('تم تحديث كلمة المرور بنجاح!');
-        // التوجيه للصفحة الرئيسية بعد النجاح
         setTimeout(() => {
           navigate('/');
         }, 2000);
       }
     } catch (error) {
-      console.error('خطأ غير متوقع:', error);
-      setMessage('حدث خطأ غير متوقع');
+      console.error('Unexpected error:', error);
+      toast.error('حدث خطأ غير متوقع');
     } finally {
       setIsLoading(false);
     }
   };
-
-  // إذا لم تكن المعاملات صحيحة، لا تعرض الصفحة
-  if (!hasValidResetParams) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4" dir="rtl">
@@ -154,11 +140,6 @@ const PasswordReset = () => {
                 {isLoading ? 'جارٍ التحديث...' : 'تأكيد'}
               </Button>
             </form>
-            {message && (
-              <p className={`mt-4 text-center ${message.includes('بنجاح') ? 'text-green-600' : 'text-red-600'}`}>
-                {message}
-              </p>
-            )}
           </CardContent>
         </Card>
       </div>
