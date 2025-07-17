@@ -121,7 +121,7 @@ const Index = () => {
                   {/* Add Ad Button */}
                   <Button 
                     onClick={() => user ? setShowCreateModal(true) : navigate('/auth')}
-                    className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 hidden sm:flex"
+                    className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 hidden sm:flex"
                   >
                     <Plus className="w-4 h-4 ml-2" />
                     إضافة إعلان
@@ -131,7 +131,7 @@ const Index = () => {
                   <Button 
                     onClick={() => user ? setShowCreateModal(true) : navigate('/auth')}
                     size="sm"
-                    className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 sm:hidden"
+                    className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 sm:hidden"
                   >
                     <Plus className="w-4 h-4" />
                   </Button>
@@ -440,7 +440,7 @@ const Index = () => {
                         {ad.title}
                       </h4>
                       <div className="text-left">
-                        <p className="text-2xl font-bold text-green-600">{formatPrice(ad.price)}</p>
+                        <p className="text-2xl font-bold text-amber-600">{formatPrice(ad.price)}</p>
                         <p className="text-sm text-gray-500">مليون جنيه سوداني</p>
                       </div>
                     </div>
@@ -488,7 +488,7 @@ const Index = () => {
                             {(ad.profiles as any)?.full_name || 'مستخدم'}
                           </p>
                           {(ad.profiles as any)?.is_premium && (
-                            <p className="text-xs text-green-600">موثق ✓</p>
+                            <p className="text-xs text-amber-600">موثق ✓</p>
                           )}
                         </div>
                       </div>
