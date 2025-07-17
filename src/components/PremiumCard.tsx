@@ -17,7 +17,7 @@ const PremiumCard = ({ variant = 'home' }: PremiumCardProps) => {
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('ar-SD').format(price / 1000000);
+    return new Intl.NumberFormat('ar-SD').format(price / 1000);
   };
 
   if (variant === 'footer') {
