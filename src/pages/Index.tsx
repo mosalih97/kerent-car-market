@@ -66,7 +66,7 @@ const Index = () => {
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('ar-SD').format(price);
+    return new Intl.NumberFormat('ar-SD').format(price / 1000000);
   };
 
   const formatDate = (dateString: string) => {
@@ -441,7 +441,7 @@ const Index = () => {
                       </h4>
                       <div className="text-left">
                         <p className="text-2xl font-bold text-green-600">{formatPrice(ad.price)}</p>
-                        <p className="text-sm text-gray-500">جنيه سوداني</p>
+                        <p className="text-sm text-gray-500">مليون جنيه سوداني</p>
                       </div>
                     </div>
 

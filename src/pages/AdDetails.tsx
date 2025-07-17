@@ -333,7 +333,7 @@ const AdDetails = () => {
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('ar-SD').format(price);
+    return new Intl.NumberFormat('ar-SD').format(price / 1000000);
   };
 
   const formatDate = (dateString: string) => {
@@ -416,7 +416,7 @@ const AdDetails = () => {
             <div>
               <h1 className="text-3xl font-bold text-gray-800 mb-2">{ad.title}</h1>
               <p className="text-4xl font-bold text-green-600 mb-4">
-                {formatPrice(ad.price)} جنيه
+                {formatPrice(ad.price)} مليون جنيه
               </p>
               <div className="flex items-center gap-4 text-gray-600 mb-4">
                 <div className="flex items-center gap-1">

@@ -37,7 +37,7 @@ const UserDashboard = () => {
   console.log('Dashboard - Unread notifications:', unreadNotifications);
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('ar-SD').format(price);
+    return new Intl.NumberFormat('ar-SD').format(price / 1000000);
   };
 
   const formatDate = (dateString: string) => {
@@ -191,7 +191,7 @@ const UserDashboard = () => {
                         {ad.title}
                       </h3>
                       <p className="text-2xl font-bold text-green-600 mb-2">
-                        {formatPrice(ad.price)} جنيه
+                        {formatPrice(ad.price)} مليون جنيه
                       </p>
                       <p className="text-sm text-gray-600 mb-4">
                         تم النشر في {formatDate(ad.created_at)}

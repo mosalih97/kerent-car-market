@@ -275,7 +275,7 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
             </div>
 
             <div>
-              <Label htmlFor="price">السعر (جنيه سوداني) *</Label>
+              <Label htmlFor="price">السعر (مليون جنيه سوداني) *</Label>
               <Input
                 id="price"
                 type="text"

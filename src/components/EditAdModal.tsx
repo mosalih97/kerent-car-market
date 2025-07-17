@@ -144,7 +144,7 @@ const EditAdModal = ({ open, onOpenChange, ad }: EditAdModalProps) => {
             </div>
 
             <div>
-              <Label htmlFor="price">السعر (جنيه سوداني) *</Label>
+              <Label htmlFor="price">السعر (مليون جنيه سوداني) *</Label>
               <Input
                 id="price"
                 type="number"
