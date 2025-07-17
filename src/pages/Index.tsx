@@ -93,11 +93,11 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-8">
               <div className="flex items-center gap-3">
-                <div className="w-24 h-24 border-2 border-amber-500 bg-transparent rounded-lg p-3 flex items-center justify-center">
+                <div className="w-24 h-24 border-2 border-amber-500 bg-transparent rounded-lg p-2 flex items-center justify-center overflow-hidden">
                   <img 
                     src="/lovable-uploads/6e1da3af-20f1-469a-8fb3-547fa3c534ac.png" 
                     alt="الكرين" 
-                    className="w-full h-full object-contain"
+                    className="w-28 h-28 object-contain transform scale-110"
                   />
                 </div>
                 <div>
