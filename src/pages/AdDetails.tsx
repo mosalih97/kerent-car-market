@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
 import { useMessages } from '@/hooks/useMessages';
+import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
 
@@ -23,6 +24,7 @@ const AdDetails = () => {
   const { user } = useAuth();
   const { credits, deductCredit, refreshCredits } = useCredits();
   const { sendMessage, isSending } = useMessages();
+  const { profile, isPremium } = useProfile();
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -107,6 +109,12 @@ const AdDetails = () => {
   const checkIfContactRevealed = async () => {
     if (!user || !id) return;
 
+    // المستخدمون المميزون يمكنهم رؤية المعلومات فوراً
+    if (isPremium) {
+      setShowContactInfo(true);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('contact_reveals')
@@ -154,6 +162,16 @@ const AdDetails = () => {
         title: "خطأ",
         description: "يجب تسجيل الدخول أولاً",
         variant: "destructive",
+      });
+      return;
+    }
+
+    // المستخدمون المميزون لا يحتاجون لكريديت
+    if (isPremium) {
+      setShowContactInfo(true);
+      toast({
+        title: "تم بنجاح",
+        description: "معلومات الاتصال متاحة للمستخدمين المميزين",
       });
       return;
     }
@@ -259,7 +277,8 @@ const AdDetails = () => {
       return;
     }
 
-    if (credits < 1) {
+    // المستخدمون المميزون لا يحتاجون لكريديت
+    if (!isPremium && credits < 1) {
       toast({
         title: "رصيد غير كافي",
         description: "ليس لديك كريديت كافي لإرسال رسالة",
@@ -269,11 +288,13 @@ const AdDetails = () => {
     }
 
     try {
-      // خصم الكريديت أولاً
-      const creditDeducted = await deductCredit();
-      
-      if (!creditDeducted) {
-        throw new Error('فشل في خصم الكريديت');
+      // خصم الكريديت فقط للمستخدمين غير المميزين
+      if (!isPremium) {
+        const creditDeducted = await deductCredit();
+        
+        if (!creditDeducted) {
+          throw new Error('فشل في خصم الكريديت');
+        }
       }
 
       // إرسال الرسالة
@@ -292,7 +313,9 @@ const AdDetails = () => {
 
     } catch (error) {
       console.error('Error sending message:', error);
-      await refreshCredits(); // إعادة تحديث الكريديت في حالة الخطأ
+      if (!isPremium) {
+        await refreshCredits(); // إعادة تحديث الكريديت في حالة الخطأ
+      }
       const errorMessage = error instanceof Error ? error.message : 'حدث خطأ غير متوقع';
       toast({
         title: "خطأ",
@@ -468,12 +491,12 @@ const AdDetails = () => {
                   </div>
                   <div>
                     <p className="font-medium">{ad.profiles.full_name}</p>
-                    {ad.profiles.is_featured && (
-                      <Badge variant="secondary" className="text-xs">
-                        <Star className="w-3 h-3 ml-1" />
-                        بائع مميز
-                      </Badge>
-                    )}
+                     {ad.profiles.is_premium && (
+                       <Badge variant="secondary" className="text-xs">
+                         <Star className="w-3 h-3 ml-1" />
+                         بائع مميز
+                       </Badge>
+                     )}
                   </div>
                 </div>
 
@@ -504,19 +527,22 @@ const AdDetails = () => {
                       <div className="space-y-3">
                         <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                           <p className="text-sm text-blue-800 mb-2">
-                            اضغط لإظهار معلومات الاتصال (يتطلب 1 كريديت)
+                            {isPremium ? 'اضغط لإظهار معلومات الاتصال (مجاناً للمستخدمين المميزين)' : 'اضغط لإظهار معلومات الاتصال (يتطلب 1 كريديت)'}
                           </p>
-                          <p className="text-sm text-blue-600">
-                            رصيدك الحالي: {credits} كريديت
-                          </p>
+                          {!isPremium && (
+                            <p className="text-sm text-blue-600">
+                              رصيدك الحالي: {credits} كريديت
+                            </p>
+                          )}
                         </div>
                         <Button 
                           onClick={revealContact}
-                          disabled={credits < 1 || isRevealing}
+                          disabled={!isPremium && (credits < 1 || isRevealing)}
                           className="w-full"
                         >
                           <Phone className="w-4 h-4 ml-2" />
-                          {isRevealing ? 'جاري الإظهار...' : 'إظهار معلومات الاتصال (1 كريديت)'}
+                          {isRevealing ? 'جاري الإظهار...' : 
+                           isPremium ? 'إظهار معلومات الاتصال (مجاناً)' : 'إظهار معلومات الاتصال (1 كريديت)'}
                         </Button>
                       </div>
                     )}
@@ -526,19 +552,21 @@ const AdDetails = () => {
                       {!showMessageBox ? (
                         <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
                           <p className="text-sm text-purple-800 mb-2">
-                            أرسل رسالة للبائع (يتطلب 1 كريديت)
+                            {isPremium ? 'أرسل رسالة للبائع (مجاناً للمستخدمين المميزين)' : 'أرسل رسالة للبائع (يتطلب 1 كريديت)'}
                           </p>
-                          <p className="text-sm text-purple-600 mb-3">
-                            رصيدك الحالي: {credits} كريديت
-                          </p>
+                          {!isPremium && (
+                            <p className="text-sm text-purple-600 mb-3">
+                              رصيدك الحالي: {credits} كريديت
+                            </p>
+                          )}
                           <Button 
                             onClick={() => setShowMessageBox(true)}
-                            disabled={credits < 1}
+                            disabled={!isPremium && credits < 1}
                             variant="outline"
                             className="w-full border-purple-300 text-purple-700 hover:bg-purple-100"
                           >
                             <Send className="w-4 h-4 ml-2" />
-                            إرسال رسالة (1 كريديت)
+                            {isPremium ? 'إرسال رسالة (مجاناً)' : 'إرسال رسالة (1 كريديت)'}
                           </Button>
                         </div>
                       ) : (
@@ -554,11 +582,12 @@ const AdDetails = () => {
                           <div className="flex gap-2">
                             <Button
                               onClick={handleSendMessage}
-                              disabled={isSending || !messageContent.trim() || credits < 1}
+                              disabled={isSending || !messageContent.trim() || (!isPremium && credits < 1)}
                               className="flex-1"
                             >
                               <Send className="w-4 h-4 ml-2" />
-                              {isSending ? 'جاري الإرسال...' : 'إرسال (1 كريديت)'}
+                              {isSending ? 'جاري الإرسال...' : 
+                               isPremium ? 'إرسال (مجاناً)' : 'إرسال (1 كريديت)'}
                             </Button>
                             <Button
                               onClick={() => {
