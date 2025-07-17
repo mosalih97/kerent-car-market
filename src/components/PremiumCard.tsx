@@ -11,7 +11,7 @@ interface PremiumCardProps {
 const PremiumCard = ({ variant = 'home' }: PremiumCardProps) => {
   const handleWhatsAppContact = () => {
     const phoneNumber = "+249966960202";
-    const message = "مرحباً، أريد الاستفسار عن الخطة المميزة للكيرين";
+    const message = "مرحباً، أريد الاستفسار عن الخطة المميزة للكرين";
     const whatsappUrl = `https://wa.me/${phoneNumber.replace('+', '')}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };

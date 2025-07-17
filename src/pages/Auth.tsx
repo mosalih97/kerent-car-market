@@ -69,10 +69,14 @@ const Auth = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg flex items-center justify-center">
-              <Car className="w-7 h-7 text-white" />
+            <div className="w-16 h-16 border-2 border-blue-500 bg-transparent rounded-lg p-2 flex items-center justify-center overflow-hidden">
+              <img 
+                src="/lovable-uploads/6e1da3af-20f1-469a-8fb3-547fa3c534ac.png" 
+                alt="الكرين" 
+                className="w-full h-full object-contain"
+              />
             </div>
-            <h1 className="text-3xl font-bold text-blue-800">الكيرين</h1>
+            <h1 className="text-3xl font-bold text-blue-800">الكرين</h1>
           </div>
           <p className="text-gray-600">موقع السيارات الأول في السودان</p>
         </div>
