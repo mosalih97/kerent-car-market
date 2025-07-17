@@ -60,7 +60,7 @@ const PremiumCard = ({ variant = 'home' }: PremiumCardProps) => {
 
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-2xl font-bold">{formatPrice(25000000)} مليون جنيه</p>
+            <p className="text-2xl font-bold">{formatPrice(25000)} ألف جنيه</p>
             <p className="text-sm text-white/80">شهرياً</p>
           </div>
           <Button 
@@ -92,8 +92,8 @@ const PremiumCard = ({ variant = 'home' }: PremiumCardProps) => {
               </div>
             </div>
             <div className="text-left">
-              <p className="text-2xl font-bold text-amber-800">{formatPrice(25000000)}</p>
-              <p className="text-sm text-amber-600">مليون جنيه/شهر</p>
+              <p className="text-2xl font-bold text-amber-800">{formatPrice(25000)}</p>
+              <p className="text-sm text-amber-600">ألف جنيه/شهر</p>
             </div>
           </div>
         </CardHeader>
@@ -147,8 +147,8 @@ const PremiumCard = ({ variant = 'home' }: PremiumCardProps) => {
             </div>
           </div>
           <div className="text-left">
-            <p className="text-3xl font-bold text-white">{formatPrice(25000000)}</p>
-            <p className="text-amber-100">مليون جنيه سوداني شهرياً</p>
+            <p className="text-3xl font-bold text-white">{formatPrice(25000)}</p>
+            <p className="text-amber-100">ألف جنيه سوداني شهرياً</p>
           </div>
         </div>
       </CardHeader>
