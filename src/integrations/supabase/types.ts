@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_placements: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ad_reports: {
         Row: {
           ad_id: string
@@ -295,6 +322,39 @@ export type Database = {
           },
         ]
       }
+      premium_subscriptions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          is_active: boolean
+          started_at: string
+          subscription_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          is_active?: boolean
+          started_at?: string
+          subscription_type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          started_at?: string
+          subscription_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           ads_count: number
@@ -459,6 +519,14 @@ export type Database = {
       check_ad_limit: {
         Args: { _user_id: string }
         Returns: boolean
+      }
+      check_premium_status: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
+      cleanup_expired_subscriptions: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       create_notification: {
         Args: {

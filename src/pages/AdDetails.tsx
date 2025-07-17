@@ -13,6 +13,7 @@ import { useMessages } from '@/hooks/useMessages';
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
+import AdComponent from '@/components/AdComponent';
 
 type Ad = Database['public']['Tables']['ads']['Row'] & {
   profiles: Database['public']['Tables']['profiles']['Row'];
@@ -406,6 +407,9 @@ const AdDetails = () => {
           </Link>
         </div>
 
+        {/* إعلان في أعلى صفحة التفاصيل */}
+        <AdComponent placement="ad_details_top" size="large" className="mb-8" />
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* معرض الصور */}
           <div className="space-y-4">
@@ -654,6 +658,9 @@ const AdDetails = () => {
             </Card>
           </div>
         </div>
+        
+        {/* إعلان في أسفل صفحة التفاصيل */}
+        <AdComponent placement="ad_details_bottom" size="large" className="mt-8" />
       </div>
     </div>
   );

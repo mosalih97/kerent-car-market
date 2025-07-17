@@ -16,6 +16,7 @@ import PremiumCard from "@/components/PremiumCard";
 import { useMessages } from "@/hooks/useMessages";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useProfile } from "@/hooks/useProfile";
+import AdComponent from "@/components/AdComponent";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -375,6 +376,9 @@ const Index = () => {
         </section>
       )}
 
+      {/* إعلان في أعلى الصفحة */}
+      <AdComponent placement="header_banner" size="large" className="container mx-auto px-4 py-4" />
+
       {/* Ads Section */}
       <section className="py-16">
         <div className="container mx-auto px-4">
@@ -405,8 +409,9 @@ const Index = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {displayAds?.map((ad) => (
-                <Card key={ad.id} className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg overflow-hidden bg-white cursor-pointer">
+              {displayAds?.map((ad, index) => (
+                <div key={ad.id}>
+                  <Card className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg overflow-hidden bg-white cursor-pointer">
                   <div className="relative">
                     <img 
                       src={ad.images?.[0] || "https://images.unsplash.com/photo-1549924231-f129b911e442?w=400&h=300&fit=crop"}
@@ -502,6 +507,14 @@ const Index = () => {
                     </div>
                   </CardContent>
                 </Card>
+                
+                {/* إعلان بين الإعلانات كل 6 إعلانات */}
+                {(index + 1) % 6 === 0 && (
+                  <div className="md:col-span-2 lg:col-span-3">
+                    <AdComponent placement="between_ads" size="large" className="w-full" />
+                  </div>
+                )}
+              </div>
               ))}
             </div>
           )}
@@ -528,6 +541,9 @@ const Index = () => {
               )}
             </div>
           )}
+          
+          {/* إعلان في نهاية قسم الإعلانات */}
+          <AdComponent placement="sidebar_ad" size="medium" className="mt-8 max-w-md mx-auto" />
         </div>
       </section>
 
@@ -601,6 +617,9 @@ const Index = () => {
               </ul>
             </div>
           </div>
+          
+          {/* إعلان في الفوتر */}
+          <AdComponent placement="footer_banner" size="large" className="mb-8" />
           
           {/* Premium Card in Footer */}
           {!isPremium && (
