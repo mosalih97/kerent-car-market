@@ -1,16 +1,16 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Car, Lock, KeyRound } from 'lucide-react';
+import { Shield } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 const PasswordReset = () => {
-  const { updatePassword, user, session } = useAuth();
+  const { updatePassword, user } = useAuth();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -20,8 +20,6 @@ const PasswordReset = () => {
 
   console.log('PasswordReset component loaded');
   console.log('URL params:', Object.fromEntries(searchParams.entries()));
-  console.log('User session:', session);
-  console.log('User object:', user);
 
   useEffect(() => {
     const handleRecoverySession = async () => {
@@ -112,6 +110,33 @@ const PasswordReset = () => {
     }
   };
 
+  if (!hasValidRecoverySession) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4" dir="rtl">
+        <div className="w-full max-w-md">
+          <Card className="shadow-2xl border-0">
+            <CardContent className="p-8">
+              <div className="text-center space-y-4">
+                <p className="text-gray-600">
+                  جارٍ التحقق من رابط الاستعادة...
+                </p>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-12"
+                  onClick={() => navigate('/auth')}
+                >
+                  العودة لصفحة تسجيل الدخول
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4" dir="rtl">
       <div className="w-full max-w-md">
@@ -132,70 +157,49 @@ const PasswordReset = () => {
         <Card className="shadow-2xl border-0">
           <CardHeader>
             <CardTitle className="text-center text-2xl text-gray-800 flex items-center justify-center gap-2">
-              <KeyRound className="w-6 h-6" />
-              إعادة تعيين كلمة المرور
+              <Shield className="w-6 h-6" />
+              تغيير كلمة المرور
             </CardTitle>
-            <p className="text-center text-gray-600 mt-2">
-              أدخل كلمة المرور الجديدة لحسابك
-            </p>
           </CardHeader>
           <CardContent>
-            {hasValidRecoverySession ? (
-              <form onSubmit={handleResetPassword} className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <Lock className="w-4 h-4" />
-                    كلمة المرور الجديدة
-                  </label>
-                  <Input
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="أدخل كلمة المرور الجديدة"
-                    className="h-12 text-right"
-                    required
-                    minLength={6}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <Lock className="w-4 h-4" />
-                    تأكيد كلمة المرور
-                  </label>
-                  <Input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="أعد إدخال كلمة المرور الجديدة"
-                    className="h-12 text-right"
-                    required
-                    minLength={6}
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  className="w-full h-12 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'جارٍ التحديث...' : 'تأكيد'}
-                </Button>
-              </form>
-            ) : (
-              <div className="text-center space-y-4">
-                <p className="text-gray-600">
-                  جارٍ التحقق من رابط الاستعادة...
-                </p>
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full h-12"
-                  onClick={() => navigate('/auth')}
-                >
-                  العودة لصفحة تسجيل الدخول
-                </Button>
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <div>
+                <Label htmlFor="newPassword">كلمة المرور الجديدة</Label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="اكتب كلمة المرور الجديدة"
+                  className="h-12 text-right"
+                  required
+                  minLength={6}
+                />
               </div>
-            )}
+
+              <div>
+                <Label htmlFor="confirmPassword">تأكيد كلمة المرور</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="أعد كتابة كلمة المرور"
+                  className="h-12 text-right"
+                  required
+                  minLength={6}
+                />
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full h-12 bg-blue-600 hover:bg-blue-700"
+                disabled={isLoading}
+              >
+                <Shield className="w-4 h-4 ml-2" />
+                {isLoading ? 'جارٍ التحديث...' : 'تحديث كلمة المرور'}
+              </Button>
+            </form>
           </CardContent>
         </Card>
       </div>
