@@ -28,14 +28,12 @@ const PasswordReset = () => {
     console.log('Recovery type:', type);
     console.log('Access token exists:', !!accessToken);
     console.log('Refresh token exists:', !!refreshToken);
+    console.log('All URL params:', Object.fromEntries(searchParams.entries()));
 
-    // التحقق من وجود المعاملات المطلوبة لإعادة تعيين كلمة المرور
-    if (type !== 'recovery' || (!accessToken && !refreshToken)) {
-      console.log('Invalid recovery link, redirecting to auth');
-      toast.error('رابط إعادة تعيين كلمة المرور غير صحيح أو منتهي الصلاحية');
-      setTimeout(() => {
-        navigate('/auth');
-      }, 3000);
+    // إذا لم يكن هناك أي معاملات استعادة، اعرض رسالة خطأ لكن لا تعيد التوجيه فوراً
+    if (type !== 'recovery' && !accessToken && !refreshToken) {
+      console.log('No recovery parameters found');
+      toast.error('يرجى استخدام الرابط المرسل إلى بريدك الإلكتروني لإعادة تعيين كلمة المرور');
     }
   }, [searchParams, navigate]);
 
@@ -147,6 +145,15 @@ const PasswordReset = () => {
                 disabled={isLoading}
               >
                 {isLoading ? 'جارٍ التحديث...' : 'تأكيد'}
+              </Button>
+              
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-12 mt-4"
+                onClick={() => navigate('/auth')}
+              >
+                العودة لصفحة تسجيل الدخول
               </Button>
             </form>
           </CardContent>
