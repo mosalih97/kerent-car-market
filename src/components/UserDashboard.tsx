@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User, Settings, MessageSquare, Bell, Plus, LogOut, Edit, Trash2, Eye, Coins, Crown } from 'lucide-react';
+import { User, Settings, MessageSquare, Bell, Plus, LogOut, Edit, Trash2, Eye, Coins, Crown, Archive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -16,6 +16,7 @@ import MessagesModal from './MessagesModal';
 import NotificationsModal from './NotificationsModal';
 import EditAdModal from './EditAdModal';
 import AccountSettingsModal from './AccountSettingsModal';
+import BackupManager from './BackupManager';
 
 const UserDashboard = () => {
   const { user, signOut } = useAuth();
@@ -106,7 +107,7 @@ const UserDashboard = () => {
         )}
 
         <Tabs defaultValue="ads" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-max">
+          <TabsList className="grid w-full grid-cols-5 lg:w-max">
             <TabsTrigger value="ads" className="flex items-center gap-2">
               <Plus className="w-4 h-4" />
               إعلاناتي
@@ -128,6 +129,10 @@ const UserDashboard = () => {
                   {unreadNotifications}
                 </Badge>
               )}
+            </TabsTrigger>
+            <TabsTrigger value="backup" className="flex items-center gap-2">
+              <Archive className="w-4 h-4" />
+              النسخ الاحتياطية
             </TabsTrigger>
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <User className="w-4 h-4" />
@@ -295,6 +300,10 @@ const UserDashboard = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="backup" className="space-y-6">
+            <BackupManager />
           </TabsContent>
 
           <TabsContent value="profile" className="space-y-6">
