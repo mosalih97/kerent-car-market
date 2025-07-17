@@ -7,35 +7,67 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Car, Lock, KeyRound } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const PasswordReset = () => {
-  const { updatePassword } = useAuth();
+  const { updatePassword, user, session } = useAuth();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [hasValidRecoverySession, setHasValidRecoverySession] = useState(false);
 
   console.log('PasswordReset component loaded');
   console.log('URL params:', Object.fromEntries(searchParams.entries()));
+  console.log('User session:', session);
+  console.log('User object:', user);
 
   useEffect(() => {
-    // فحص إذا كان المستخدم وصل من رابط صحيح
-    const type = searchParams.get('type');
-    const accessToken = searchParams.get('access_token');
-    const refreshToken = searchParams.get('refresh_token');
-    
-    console.log('Recovery type:', type);
-    console.log('Access token exists:', !!accessToken);
-    console.log('Refresh token exists:', !!refreshToken);
-    console.log('All URL params:', Object.fromEntries(searchParams.entries()));
+    const handleRecoverySession = async () => {
+      const type = searchParams.get('type');
+      const accessToken = searchParams.get('access_token');
+      const refreshToken = searchParams.get('refresh_token');
+      
+      console.log('Recovery type:', type);
+      console.log('Access token exists:', !!accessToken);
+      console.log('Refresh token exists:', !!refreshToken);
 
-    // إذا لم يكن هناك أي معاملات استعادة، اعرض رسالة خطأ لكن لا تعيد التوجيه فوراً
-    if (type !== 'recovery' && !accessToken && !refreshToken) {
-      console.log('No recovery parameters found');
-      toast.error('يرجى استخدام الرابط المرسل إلى بريدك الإلكتروني لإعادة تعيين كلمة المرور');
-    }
-  }, [searchParams, navigate]);
+      // إذا كان هناك رموز استعادة، حاول إعداد الجلسة
+      if (type === 'recovery' && (accessToken || refreshToken)) {
+        try {
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken!,
+            refresh_token: refreshToken!
+          });
+          
+          if (error) {
+            console.error('Error setting recovery session:', error);
+            toast.error('رابط الاستعادة غير صحيح أو منتهي الصلاحية');
+            setTimeout(() => navigate('/auth'), 3000);
+          } else {
+            console.log('Recovery session set successfully:', data);
+            setHasValidRecoverySession(true);
+            toast.success('يمكنك الآن إدخال كلمة المرور الجديدة');
+          }
+        } catch (error) {
+          console.error('Unexpected error setting session:', error);
+          toast.error('حدث خطأ غير متوقع');
+          setTimeout(() => navigate('/auth'), 3000);
+        }
+      } else if (user) {
+        // إذا كان المستخدم مسجل دخوله بالفعل، اسمح له بتغيير كلمة المرور
+        setHasValidRecoverySession(true);
+        toast.success('يمكنك الآن إدخال كلمة المرور الجديدة');
+      } else {
+        // لا توجد معاملات استعادة ولا يوجد مستخدم مسجل دخوله
+        toast.error('يرجى استخدام الرابط المرسل إلى بريدك الإلكتروني لإعادة تعيين كلمة المرور');
+        setTimeout(() => navigate('/auth'), 3000);
+      }
+    };
+
+    handleRecoverySession();
+  }, [searchParams, navigate, user]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,54 +140,62 @@ const PasswordReset = () => {
             </p>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleResetPassword} className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                  <Lock className="w-4 h-4" />
-                  كلمة المرور الجديدة
-                </label>
-                <Input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="أدخل كلمة المرور الجديدة"
-                  className="h-12 text-right"
-                  required
-                  minLength={6}
-                />
+            {hasValidRecoverySession ? (
+              <form onSubmit={handleResetPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <Lock className="w-4 h-4" />
+                    كلمة المرور الجديدة
+                  </label>
+                  <Input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="أدخل كلمة المرور الجديدة"
+                    className="h-12 text-right"
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <Lock className="w-4 h-4" />
+                    تأكيد كلمة المرور
+                  </label>
+                  <Input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="أعد إدخال كلمة المرور الجديدة"
+                    className="h-12 text-right"
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full h-12 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'جارٍ التحديث...' : 'تأكيد'}
+                </Button>
+              </form>
+            ) : (
+              <div className="text-center space-y-4">
+                <p className="text-gray-600">
+                  جارٍ التحقق من رابط الاستعادة...
+                </p>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-12"
+                  onClick={() => navigate('/auth')}
+                >
+                  العودة لصفحة تسجيل الدخول
+                </Button>
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                  <Lock className="w-4 h-4" />
-                  تأكيد كلمة المرور
-                </label>
-                <Input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="أعد إدخال كلمة المرور الجديدة"
-                  className="h-12 text-right"
-                  required
-                  minLength={6}
-                />
-              </div>
-              <Button
-                type="submit"
-                className="w-full h-12 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
-                disabled={isLoading}
-              >
-                {isLoading ? 'جارٍ التحديث...' : 'تأكيد'}
-              </Button>
-              
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full h-12 mt-4"
-                onClick={() => navigate('/auth')}
-              >
-                العودة لصفحة تسجيل الدخول
-              </Button>
-            </form>
+            )}
           </CardContent>
         </Card>
       </div>
