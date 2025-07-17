@@ -15,6 +15,7 @@ import NotificationsModal from "@/components/NotificationsModal";
 import PremiumCard from "@/components/PremiumCard";
 import { useMessages } from "@/hooks/useMessages";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useProfile } from "@/hooks/useProfile";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ const Index = () => {
   const { searchAds, clearSearch, isSearching, searchResults, hasSearched } = useSearch();
   const { unreadCount: unreadMessages } = useMessages();
   const { unreadCount: unreadNotifications } = useNotifications();
+  const { isPremium } = useProfile();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showMessagesModal, setShowMessagesModal] = useState(false);
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
@@ -222,7 +224,7 @@ const Index = () => {
         <div className="relative container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
-              اعثر على سيارة أحلامك
+              اشتري وبيع بمزاجك
             </h2>
             <p className="text-xl md:text-2xl text-blue-100 max-w-2xl mx-auto leading-relaxed">
               أكثر من {ads?.length || 0} سيارة متاحة للبيع في جميع أنحاء السودان
@@ -365,11 +367,13 @@ const Index = () => {
       </section>
 
       {/* Premium Plan Card */}
-      <section className="py-8 bg-white">
-        <div className="container mx-auto px-4">
-          <PremiumCard variant="home" />
-        </div>
-      </section>
+      {!isPremium && (
+        <section className="py-8 bg-white">
+          <div className="container mx-auto px-4">
+            <PremiumCard variant="home" />
+          </div>
+        </section>
+      )}
 
       {/* Ads Section */}
       <section className="py-16">
@@ -599,9 +603,11 @@ const Index = () => {
           </div>
           
           {/* Premium Card in Footer */}
-          <div className="mb-8">
-            <PremiumCard variant="footer" />
-          </div>
+          {!isPremium && (
+            <div className="mb-8">
+              <PremiumCard variant="footer" />
+            </div>
+          )}
           
           <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
             <p>&copy; 2024 الكرين. جميع الحقوق محفوظة.</p>
