@@ -1,5 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { Database } from '@/integrations/supabase/types';
@@ -11,6 +12,40 @@ type Ad = Database['public']['Tables']['ads']['Row'] & {
 type AdInsert = Database['public']['Tables']['ads']['Insert'];
 
 export const useAds = () => {
+  const queryClient = useQueryClient();
+
+  // إعداد التحديث في الوقت الحقيقي
+  useEffect(() => {
+    const channel = supabase
+      .channel('ads-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'ads'
+        },
+        (payload) => {
+          console.log('Real-time ads update:', payload);
+          // تحديث البيانات في الكاش
+          queryClient.setQueryData(['ads'], (oldData: Ad[] | undefined) => {
+            if (!oldData) return oldData;
+            
+            return oldData.map(ad => 
+              ad.id === payload.new.id 
+                ? { ...ad, views_count: payload.new.views_count }
+                : ad
+            );
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   return useQuery({
     queryKey: ['ads'],
     queryFn: async () => {

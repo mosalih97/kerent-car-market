@@ -69,6 +69,34 @@ const AdDetails = () => {
     }
   }, [id, user]);
 
+  // التحديث في الوقت الحقيقي لعداد المشاهدات
+  useEffect(() => {
+    if (!id) return;
+
+    const channel = supabase
+      .channel('ad-views-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'ads',
+          filter: `id=eq.${id}`
+        },
+        (payload) => {
+          console.log('Real-time ad update:', payload);
+          if (payload.new && ad) {
+            setAd(prev => prev ? { ...prev, views_count: payload.new.views_count } : null);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [id, ad]);
+
   const fetchAd = async () => {
     if (!id) return;
 
