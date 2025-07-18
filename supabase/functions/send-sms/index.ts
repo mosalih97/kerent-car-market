@@ -26,6 +26,7 @@ serve(async (req) => {
 
     const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
     const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
+    const twilioPhone = Deno.env.get('TWILIO_PHONE_NUMBER');
 
     if (!accountSid || !authToken) {
       console.error('Missing Twilio credentials');
@@ -38,13 +39,16 @@ serve(async (req) => {
       );
     }
 
+    // If no Twilio phone number is configured, use a test phone number for development
+    const fromPhone = twilioPhone || '+15005550006'; // Twilio test number
+
     // Twilio API endpoint
     const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
     
     // Create form data for Twilio API
     const formData = new URLSearchParams();
     formData.append('To', phone);
-    formData.append('From', '+12345678901'); // Replace with your Twilio phone number
+    formData.append('From', fromPhone);
     formData.append('Body', message);
 
     // Send SMS via Twilio
@@ -60,8 +64,23 @@ serve(async (req) => {
     if (!response.ok) {
       const errorData = await response.text();
       console.error('Twilio API error:', errorData);
+      console.error('Phone From:', fromPhone, 'Phone To:', phone);
+      
+      // Parse Twilio error for better user feedback
+      let userError = 'فشل في إرسال رمز التحقق';
+      try {
+        const errorJson = JSON.parse(errorData);
+        if (errorJson.message?.includes('phone number')) {
+          userError = 'رقم الهاتف غير صحيح';
+        } else if (errorJson.message?.includes('from')) {
+          userError = 'خطأ في إعدادات الخدمة';
+        }
+      } catch (e) {
+        // Keep default error message
+      }
+      
       return new Response(
-        JSON.stringify({ error: 'Failed to send SMS' }),
+        JSON.stringify({ error: userError, details: errorData }),
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
