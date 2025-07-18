@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Car, Mail, Lock, User } from 'lucide-react';
+import { Car, Mail, Lock, User, Phone } from 'lucide-react';
+import PhoneAuth from '@/components/PhoneAuth';
 
 const Auth = () => {
   const { user, loading, signUp, signIn, resetPassword } = useAuth();
@@ -129,8 +130,9 @@ const Auth = () => {
               </div>
             ) : (
               <Tabs defaultValue="signin" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="signin">تسجيل الدخول</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-3 mb-6">
+                  <TabsTrigger value="signin">البريد الإلكتروني</TabsTrigger>
+                  <TabsTrigger value="phone">رقم الهاتف</TabsTrigger>
                   <TabsTrigger value="signup">إنشاء حساب</TabsTrigger>
                 </TabsList>
 
@@ -181,6 +183,10 @@ const Auth = () => {
                       {isLoading ? 'جارٍ تسجيل الدخول...' : 'تسجيل الدخول'}
                     </Button>
                   </form>
+                </TabsContent>
+
+                <TabsContent value="phone">
+                  <PhoneAuth onSuccess={() => window.location.href = '/'} />
                 </TabsContent>
 
                 <TabsContent value="signup">
