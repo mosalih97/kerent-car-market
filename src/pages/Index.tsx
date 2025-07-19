@@ -10,13 +10,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAds } from "@/hooks/useAds";
 import { useSearch } from "@/hooks/useSearch";
 import CreateAdModal from "@/components/CreateAdModal";
-import MessagesModal from "@/components/MessagesModal";
-import NotificationsModal from "@/components/NotificationsModal";
+import MessagingCenter from "@/components/MessagingCenter";
+import NotificationCenter from "@/components/NotificationCenter";
 import PremiumCard from "@/components/PremiumCard";
 import { useMessages } from "@/hooks/useMessages";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useProfile } from "@/hooks/useProfile";
 import AdComponent from "@/components/AdComponent";
+import LiveNotifications from "@/components/LiveNotifications";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -27,8 +28,8 @@ const Index = () => {
   const { unreadCount: unreadNotifications } = useNotifications();
   const { isPremium } = useProfile();
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showMessagesModal, setShowMessagesModal] = useState(false);
-  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+  const [showMessagingCenter, setShowMessagingCenter] = useState(false);
+  const [showNotificationCenter, setShowNotificationCenter] = useState(false);
   
   // Search filters
   const [searchFilters, setSearchFilters] = useState({
@@ -141,7 +142,7 @@ const Index = () => {
                   <Button 
                     variant="outline" 
                     className="hidden sm:flex relative"
-                    onClick={() => user ? setShowMessagesModal(true) : navigate('/auth')}
+                    onClick={() => user ? setShowMessagingCenter(true) : navigate('/auth')}
                   >
                     <MessageCircle className="w-4 h-4 ml-2" />
                     الرسائل
@@ -157,7 +158,7 @@ const Index = () => {
                     variant="outline" 
                     size="sm" 
                     className="sm:hidden relative"
-                    onClick={() => user ? setShowMessagesModal(true) : navigate('/auth')}
+                    onClick={() => user ? setShowMessagingCenter(true) : navigate('/auth')}
                   >
                     <MessageCircle className="w-4 h-4" />
                     {user && unreadMessages > 0 && (
@@ -171,7 +172,7 @@ const Index = () => {
                   <Button 
                     variant="outline" 
                     className="hidden sm:flex relative"
-                    onClick={() => user ? setShowNotificationsModal(true) : navigate('/auth')}
+                    onClick={() => user ? setShowNotificationCenter(true) : navigate('/auth')}
                   >
                     <Bell className="w-4 h-4 ml-2" />
                     الإشعارات
@@ -187,7 +188,7 @@ const Index = () => {
                     variant="outline" 
                     size="sm" 
                     className="sm:hidden relative"
-                    onClick={() => user ? setShowNotificationsModal(true) : navigate('/auth')}
+                    onClick={() => user ? setShowNotificationCenter(true) : navigate('/auth')}
                   >
                     <Bell className="w-4 h-4" />
                     {user && unreadNotifications > 0 && (
@@ -635,8 +636,9 @@ const Index = () => {
       </footer>
 
       {user && <CreateAdModal open={showCreateModal} onOpenChange={setShowCreateModal} />}
-      {user && <MessagesModal open={showMessagesModal} onOpenChange={setShowMessagesModal} />}
-      {user && <NotificationsModal open={showNotificationsModal} onOpenChange={setShowNotificationsModal} />}
+      {user && <MessagingCenter open={showMessagingCenter} onOpenChange={setShowMessagingCenter} />}
+      {user && <NotificationCenter open={showNotificationCenter} onOpenChange={setShowNotificationCenter} />}
+      {user && <LiveNotifications />}
     </div>
   );
 };

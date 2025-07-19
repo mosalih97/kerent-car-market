@@ -150,12 +150,26 @@ export const useMessages = () => {
           queryClient.invalidateQueries({ queryKey: ['messages'] });
           queryClient.invalidateQueries({ queryKey: ['messages-unread'] });
           
-          // Show toast for new messages
+          // Show toast for new messages with sender info
           if (payload.eventType === 'INSERT' && payload.new.receiver_id === user.id) {
-            toast({
-              title: "رسالة جديدة",
-              description: "لديك رسالة جديدة",
-            });
+            const message = payload.new;
+            
+            // Fetch sender info for notification
+            supabase
+              .from('profiles')
+              .select('full_name')
+              .eq('id', message.sender_id)
+              .single()
+              .then(({ data }) => {
+                const senderName = data?.full_name || 'مستخدم';
+                toast({
+                  title: `رسالة جديدة من ${senderName}`,
+                  description: message.content.length > 50 
+                    ? message.content.substring(0, 50) + '...' 
+                    : message.content,
+                  duration: 5000,
+                });
+              });
           }
         }
       )
