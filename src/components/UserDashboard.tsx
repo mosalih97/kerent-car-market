@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User, Settings, MessageSquare, Bell, Plus, LogOut, Edit, Trash2, Eye, Coins, Crown } from 'lucide-react';
+import { User, Settings, Plus, LogOut, Edit, Trash2, Eye, Coins, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -7,13 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useMyAds, useDeleteAd } from '@/hooks/useAds';
 import { useProfile } from '@/hooks/useProfile';
-import { useMessages } from '@/hooks/useMessages';
-import { useNotifications } from '@/hooks/useNotifications';
 import { useNavigate } from 'react-router-dom';
 import CreateAdModal from './CreateAdModal';
 import PremiumCard from './PremiumCard';
-import MessagesModal from './MessagesModal';
-import NotificationsModal from './NotificationsModal';
 import EditAdModal from './EditAdModal';
 import AccountSettingsModal from './AccountSettingsModal';
 
@@ -22,19 +18,12 @@ const UserDashboard = () => {
   const navigate = useNavigate();
   const { data: myAds, isLoading } = useMyAds();
   const { profile, isLoading: profileLoading } = useProfile();
-  const { unreadCount: unreadMessages } = useMessages();
-  const { unreadCount: unreadNotifications } = useNotifications();
   const deleteAdMutation = useDeleteAd();
   
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showMessagesModal, setShowMessagesModal] = useState(false);
-  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [selectedAd, setSelectedAd] = useState<any>(null);
-
-  console.log('Dashboard - Unread messages:', unreadMessages);
-  console.log('Dashboard - Unread notifications:', unreadNotifications);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ar-SD').format(price / 1000000);
@@ -106,28 +95,10 @@ const UserDashboard = () => {
         )}
 
         <Tabs defaultValue="ads" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-max">
+          <TabsList className="grid w-full grid-cols-2 lg:w-max">
             <TabsTrigger value="ads" className="flex items-center gap-2">
               <Plus className="w-4 h-4" />
               إعلاناتي
-            </TabsTrigger>
-            <TabsTrigger value="messages" className="flex items-center gap-2 relative">
-              <MessageSquare className="w-4 h-4" />
-              الرسائل
-              {unreadMessages > 0 && (
-                <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
-                  {unreadMessages}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="notifications" className="flex items-center gap-2 relative">
-              <Bell className="w-4 h-4" />
-              الإشعارات
-              {unreadNotifications > 0 && (
-                <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
-                  {unreadNotifications}
-                </Badge>
-              )}
             </TabsTrigger>
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <User className="w-4 h-4" />
@@ -238,67 +209,8 @@ const UserDashboard = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="messages" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <MessageSquare className="w-5 h-5" />
-                    الرسائل
-                  </div>
-                  <Button 
-                    onClick={() => setShowMessagesModal(true)} 
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    <MessageSquare className="w-4 h-4 ml-2" />
-                    فتح الرسائل
-                    {unreadMessages > 0 && (
-                      <Badge variant="destructive" className="mr-2">
-                        {unreadMessages}
-                      </Badge>
-                    )}
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-600 mb-2">
-                    {unreadMessages > 0 ? `لديك ${unreadMessages} رسالة جديدة` : 'الرسائل'}
-                  </h3>
-                  <p className="text-gray-500 mb-4">
-                    {unreadMessages > 0 ? 'انقر على "فتح الرسائل" لقراءة رسائلك الجديدة' : 'تواصل مع البائعين والمشترين'}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="notifications" className="space-y-6">
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bell className="w-5 h-5" />
-                  الإشعارات
-                  {unreadNotifications > 0 && (
-                    <Badge variant="destructive">{unreadNotifications} جديد</Badge>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <Button onClick={() => setShowNotificationsModal(true)} className="bg-blue-600 hover:bg-blue-700">
-                    <Bell className="w-4 h-4 ml-2" />
-                    فتح الإشعارات
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           <TabsContent value="profile" className="space-y-6">
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
@@ -370,10 +282,6 @@ const UserDashboard = () => {
                     تعديل المعلومات الشخصية
                   </Button>
                   <Button variant="outline" className="w-full justify-start">
-                    <Bell className="w-4 h-4 ml-2" />
-                    إعدادات الإشعارات
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start">
                     <Settings className="w-4 h-4 ml-2" />
                     إعدادات الخصوصية
                   </Button>
@@ -395,8 +303,6 @@ const UserDashboard = () => {
       </div>
 
       <CreateAdModal open={showCreateModal} onOpenChange={setShowCreateModal} />
-      <MessagesModal open={showMessagesModal} onOpenChange={setShowMessagesModal} />
-      <NotificationsModal open={showNotificationsModal} onOpenChange={setShowNotificationsModal} />
       <AccountSettingsModal open={showSettingsModal} onOpenChange={setShowSettingsModal} />
       {selectedAd && (
         <EditAdModal 

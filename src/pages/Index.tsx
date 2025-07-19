@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, MapPin, Car, DollarSign, Filter, Star, Eye, MessageCircle, Plus, Bell, User } from "lucide-react";
+import { Search, MapPin, Car, DollarSign, Filter, Star, Eye, Plus, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -10,26 +10,17 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAds } from "@/hooks/useAds";
 import { useSearch } from "@/hooks/useSearch";
 import CreateAdModal from "@/components/CreateAdModal";
-import MessagingCenter from "@/components/MessagingCenter";
-import NotificationCenter from "@/components/NotificationCenter";
 import PremiumCard from "@/components/PremiumCard";
-import { useMessages } from "@/hooks/useMessages";
-import { useNotifications } from "@/hooks/useNotifications";
 import { useProfile } from "@/hooks/useProfile";
 import AdComponent from "@/components/AdComponent";
-import LiveNotifications from "@/components/LiveNotifications";
 
 const Index = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: ads, isLoading } = useAds();
   const { searchAds, clearSearch, isSearching, searchResults, hasSearched } = useSearch();
-  const { unreadCount: unreadMessages } = useMessages();
-  const { unreadCount: unreadNotifications } = useNotifications();
   const { isPremium } = useProfile();
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showMessagingCenter, setShowMessagingCenter] = useState(false);
-  const [showNotificationCenter, setShowNotificationCenter] = useState(false);
   
   // Search filters
   const [searchFilters, setSearchFilters] = useState({
@@ -136,66 +127,6 @@ const Index = () => {
                     className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 sm:hidden"
                   >
                     <Plus className="w-4 h-4" />
-                  </Button>
-
-                  {/* Messages Button */}
-                  <Button 
-                    variant="outline" 
-                    className="hidden sm:flex relative"
-                    onClick={() => user ? setShowMessagingCenter(true) : navigate('/auth')}
-                  >
-                    <MessageCircle className="w-4 h-4 ml-2" />
-                    الرسائل
-                    {user && unreadMessages > 0 && (
-                      <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                        {unreadMessages}
-                      </Badge>
-                    )}
-                  </Button>
-                  
-                  {/* Mobile Messages Button */}
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="sm:hidden relative"
-                    onClick={() => user ? setShowMessagingCenter(true) : navigate('/auth')}
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    {user && unreadMessages > 0 && (
-                      <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                        {unreadMessages}
-                      </Badge>
-                    )}
-                  </Button>
-
-                  {/* Notifications Button */}
-                  <Button 
-                    variant="outline" 
-                    className="hidden sm:flex relative"
-                    onClick={() => user ? setShowNotificationCenter(true) : navigate('/auth')}
-                  >
-                    <Bell className="w-4 h-4 ml-2" />
-                    الإشعارات
-                    {user && unreadNotifications > 0 && (
-                      <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                        {unreadNotifications}
-                      </Badge>
-                    )}
-                  </Button>
-                  
-                  {/* Mobile Notifications Button */}
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="sm:hidden relative"
-                    onClick={() => user ? setShowNotificationCenter(true) : navigate('/auth')}
-                  >
-                    <Bell className="w-4 h-4" />
-                    {user && unreadNotifications > 0 && (
-                      <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                        {unreadNotifications}
-                      </Badge>
-                    )}
                   </Button>
 
                   {/* My Account Button */}
@@ -636,9 +567,6 @@ const Index = () => {
       </footer>
 
       {user && <CreateAdModal open={showCreateModal} onOpenChange={setShowCreateModal} />}
-      {user && <MessagingCenter open={showMessagingCenter} onOpenChange={setShowMessagingCenter} />}
-      {user && <NotificationCenter open={showNotificationCenter} onOpenChange={setShowNotificationCenter} />}
-      {user && <LiveNotifications />}
     </div>
   );
 };

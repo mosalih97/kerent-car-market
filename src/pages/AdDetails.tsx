@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, MapPin, Calendar, Gauge, Phone, Star, Eye, Heart, MessageCircle, Send } from 'lucide-react';
+import { ArrowRight, MapPin, Calendar, Gauge, Phone, Star, Eye, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +9,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
-import { useMessages } from '@/hooks/useMessages';
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
@@ -24,7 +23,6 @@ const AdDetails = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const { credits, deductCredit, refreshCredits } = useCredits();
-  const { sendMessage, isSending } = useMessages();
   const { profile, isPremium } = useProfile();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -326,8 +324,8 @@ const AdDetails = () => {
         }
       }
 
-      // إرسال الرسالة
-      sendMessage({
+      // TODO: Implement message sending functionality
+      console.log('Message would be sent:', {
         receiverId: ad.user_id,
         content: messageContent,
         adId: ad.id
@@ -546,8 +544,7 @@ const AdDetails = () => {
                               onClick={openWhatsApp}
                               className="w-full mt-2 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
                             >
-                              <MessageCircle className="w-4 h-4" />
-                              محادثة واتساب
+                              واتساب
                             </button>
                           )}
                           <p className="text-sm text-green-600 mt-2">
@@ -597,8 +594,7 @@ const AdDetails = () => {
                             variant="outline"
                             className="w-full border-purple-300 text-purple-700 hover:bg-purple-100"
                           >
-                            <Send className="w-4 h-4 ml-2" />
-                            {isPremium ? 'إرسال رسالة (مجاناً)' : 'إرسال رسالة (1 كريديت)'}
+                            إرسال رسالة
                           </Button>
                         </div>
                       ) : (
@@ -614,12 +610,10 @@ const AdDetails = () => {
                           <div className="flex gap-2">
                             <Button
                               onClick={handleSendMessage}
-                              disabled={isSending || !messageContent.trim() || (!isPremium && credits < 1)}
+                              disabled={!messageContent.trim() || (!isPremium && credits < 1)}
                               className="flex-1"
                             >
-                              <Send className="w-4 h-4 ml-2" />
-                              {isSending ? 'جاري الإرسال...' : 
-                               isPremium ? 'إرسال (مجاناً)' : 'إرسال (1 كريديت)'}
+                              {isPremium ? 'إرسال (مجاناً)' : 'إرسال (1 كريديت)'}
                             </Button>
                             <Button
                               onClick={() => {
@@ -644,7 +638,6 @@ const AdDetails = () => {
                     </div>
                     {ad.whatsapp && (
                       <div className="flex items-center gap-2 text-blue-600 mt-1">
-                        <MessageCircle className="w-4 h-4" />
                         <span className="font-medium" dir="ltr">{ad.whatsapp}</span>
                       </div>
                     )}
