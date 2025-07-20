@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
-import { useAuth } from './useAuth';
 
 type Ad = Database['public']['Tables']['ads']['Row'] & {
   profiles?: Database['public']['Tables']['profiles']['Row'];
@@ -20,7 +19,6 @@ interface SearchFilters {
 }
 
 export const useSearch = () => {
-  const { user } = useAuth();
   const [hasSearched, setHasSearched] = useState(false);
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
     city: '',
@@ -80,19 +78,6 @@ export const useSearch = () => {
       }
 
       console.log('Search results:', data);
-      
-      // تحديث سلوك المستخدم مع فلاتر البحث
-      if (user) {
-        try {
-          await supabase.rpc('update_user_behavior', {
-            _user_id: user.id,
-            _search_filters: JSON.parse(JSON.stringify(searchFilters))
-          });
-        } catch (behaviorError) {
-          console.error('Error updating user behavior:', behaviorError);
-        }
-      }
-      
       return data as Ad[];
     },
     enabled: false // Only run when explicitly called

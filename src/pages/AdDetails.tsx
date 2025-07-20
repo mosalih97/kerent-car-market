@@ -12,8 +12,7 @@ import { useCredits } from '@/hooks/useCredits';
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
-import SmartAdComponent from '@/components/SmartAdComponent';
-import { useUpdateUserBehavior } from '@/hooks/usePremiumAds';
+import AdComponent from '@/components/AdComponent';
 
 type Ad = Database['public']['Tables']['ads']['Row'] & {
   profiles: Database['public']['Tables']['profiles']['Row'];
@@ -27,7 +26,6 @@ const AdDetails = () => {
   const { profile, isPremium } = useProfile();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const updateBehavior = useUpdateUserBehavior();
   
   const [ad, setAd] = useState<Ad | null>(null);
   const [loading, setLoading] = useState(true);
@@ -122,18 +120,6 @@ const AdDetails = () => {
         console.log('Ad fetched successfully:', data);
         setAd(data as Ad);
         await trackView();
-        
-        // تحديث سلوك المستخدم عند مشاهدة الإعلان
-        if (user && data) {
-          updateBehavior.mutate({
-            viewedAdBrand: data.brand,
-            viewedAdPrice: data.price,
-            viewedAdCity: data.city,
-            viewedAdCondition: data.condition,
-            isPremiumAd: data.is_premium,
-            isFeaturedAd: data.is_featured
-          });
-        }
       }
     } catch (error) {
       console.error('Error in fetchAd:', error);
@@ -419,8 +405,8 @@ const AdDetails = () => {
           </Link>
         </div>
 
-        {/* إعلانات ذكية في أعلى صفحة التفاصيل */}
-        <SmartAdComponent placement="ad_details_top" size="large" className="mb-8" limit={3} />
+        {/* إعلان في أعلى صفحة التفاصيل */}
+        <AdComponent placement="ad_details_top" size="large" className="mb-8" />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* معرض الصور */}
@@ -666,8 +652,8 @@ const AdDetails = () => {
           </div>
         </div>
         
-        {/* إعلانات ذكية في أسفل صفحة التفاصيل */}
-        <SmartAdComponent placement="ad_details_bottom" size="large" className="mt-8" limit={3} />
+        {/* إعلان في أسفل صفحة التفاصيل */}
+        <AdComponent placement="ad_details_bottom" size="large" className="mt-8" />
       </div>
     </div>
   );
