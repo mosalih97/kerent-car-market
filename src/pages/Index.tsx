@@ -13,6 +13,7 @@ import CreateAdModal from "@/components/CreateAdModal";
 import PremiumCard from "@/components/PremiumCard";
 import { useProfile } from "@/hooks/useProfile";
 import SmartAdComponent from "@/components/SmartAdComponent";
+import SuggestedAds from "@/components/SuggestedAds";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -468,6 +469,16 @@ const Index = () => {
           
           {/* إعلانات ذكية في نهاية قسم الإعلانات */}
           <SmartAdComponent placement="sidebar_ad" size="medium" className="mt-8 max-w-md mx-auto" limit={2} />
+          
+          {/* الإعلانات المقترحة */}
+          {displayAds && displayAds.length > 0 && (
+            <SuggestedAds 
+              currentAdId={displayAds[0]?.id || ''} 
+              brand={displayAds[0]?.brand} 
+              city={displayAds[0]?.city} 
+              className="mt-12"
+            />
+          )}
         </div>
       </section>
 
