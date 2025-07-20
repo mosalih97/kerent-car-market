@@ -21,6 +21,14 @@ const SuggestedAds: React.FC<SuggestedAdsProps> = ({
   const { data: suggestedAds, isLoading } = useSuggestedAds(currentAdId, brand, city, 6);
   const updateBehavior = useUpdateUserBehavior();
 
+  console.log('SuggestedAds component rendered:', {
+    currentAdId,
+    brand,
+    city,
+    suggestedAds: suggestedAds?.length,
+    isLoading
+  });
+
   const handleAdClick = (ad: any) => {
     // تحديث سلوك المستخدم
     updateBehavior.mutate({
