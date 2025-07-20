@@ -2,9 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSuggestedAds } from '@/hooks/useSuggestedAds';
 import { useUpdateUserBehavior } from '@/hooks/usePremiumAds';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { MapPin, Eye, Star, Crown } from 'lucide-react';
+import { Eye } from 'lucide-react';
 
 interface SuggestedAdsProps {
   currentAdId: string;
@@ -43,20 +41,20 @@ const SuggestedAds: React.FC<SuggestedAdsProps> = ({
 
   if (isLoading) {
     return (
-      <div className={`suggested-ads ${className}`}>
-        <h3 className="text-xl font-bold text-gray-800 mb-6">إعلانات مقترحة</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="border rounded-lg overflow-hidden shadow-sm bg-white animate-pulse">
-            <div className="h-24 w-full bg-gray-200"></div>
-            <div className="p-2">
-              <div className="h-3 bg-gray-200 rounded mb-1"></div>
-              <div className="h-2 bg-gray-200 rounded mb-1"></div>
-              <div className="h-2 bg-gray-200 rounded"></div>
+      <div className={`mt-6 ${className}`}>
+        <h3 className="text-lg font-bold mb-2 text-right">إعلانات مقترحة</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="border rounded-lg overflow-hidden shadow-sm bg-white animate-pulse">
+              <div className="h-24 w-full bg-gray-200"></div>
+              <div className="p-2">
+                <div className="h-3 bg-gray-200 rounded mb-1"></div>
+                <div className="h-2 bg-gray-200 rounded mb-1"></div>
+                <div className="h-2 bg-gray-200 rounded"></div>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -66,17 +64,13 @@ const SuggestedAds: React.FC<SuggestedAdsProps> = ({
   }
 
   return (
-    <div className={`suggested-ads ${className}`}>
-      <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-        <Star className="w-5 h-5 text-amber-500" />
-        إعلانات مقترحة لك
-      </h3>
-      
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+    <div className={`mt-6 ${className}`}>
+      <h3 className="text-lg font-bold mb-2 text-right">إعلانات مقترحة</h3>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {suggestedAds.map((ad) => (
           <div 
             key={ad.id}
-            className="border rounded-lg overflow-hidden shadow-sm bg-white cursor-pointer hover:shadow-md transition-shadow duration-200"
+            className="border rounded-lg overflow-hidden shadow-sm bg-white text-right cursor-pointer hover:shadow-md transition-shadow duration-200"
             onClick={() => handleAdClick(ad)}
           >
             <div className="relative">
@@ -109,7 +103,7 @@ const SuggestedAds: React.FC<SuggestedAdsProps> = ({
               </div>
             </div>
 
-            <div className="p-2 text-right">
+            <div className="p-2">
               <h4 className="text-sm font-semibold truncate text-gray-800">
                 {ad.title}
               </h4>
@@ -120,13 +114,6 @@ const SuggestedAds: React.FC<SuggestedAdsProps> = ({
             </div>
           </div>
         ))}
-      </div>
-      
-      {/* رسالة توضيحية */}
-      <div className="mt-4 text-center">
-        <p className="text-sm text-gray-500">
-          الإعلانات المقترحة بناءً على اهتماماتك وتفضيلاتك
-        </p>
       </div>
     </div>
   );
