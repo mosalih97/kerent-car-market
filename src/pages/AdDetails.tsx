@@ -13,7 +13,6 @@ import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
 import SmartAdComponent from '@/components/SmartAdComponent';
-import SuggestedAds from '@/components/SuggestedAds';
 import { useUpdateUserBehavior } from '@/hooks/usePremiumAds';
 
 type Ad = Database['public']['Tables']['ads']['Row'] & {
@@ -666,14 +665,6 @@ const AdDetails = () => {
             </Card>
           </div>
         </div>
-        
-        {/* الإعلانات المقترحة */}
-        <SuggestedAds 
-          currentAdId={ad.id} 
-          brand={ad.brand} 
-          city={ad.city} 
-          className="mt-12"
-        />
         
         {/* إعلانات ذكية في أسفل صفحة التفاصيل */}
         <SmartAdComponent placement="ad_details_bottom" size="large" className="mt-8" limit={3} />
