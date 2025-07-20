@@ -28,6 +28,20 @@
     --accent: 43 96% 56%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
+    /* Premium Colors - Golden Theme */
+    --premium: 45 93% 58%;
+    --premium-foreground: 45 9% 8%;
+    --premium-muted: 45 100% 96%;
+    --premium-border: 45 60% 85%;
+
+    /* Featured Colors */
+    --featured: 43 96% 56%;
+    --featured-foreground: 45 9% 8%;
+
+    /* Gradients */
+    --gradient-premium: linear-gradient(135deg, hsl(45, 93%, 58%), hsl(38, 100%, 70%));
+    --gradient-featured: linear-gradient(135deg, hsl(43, 96%, 56%), hsl(48, 100%, 67%));
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
@@ -68,6 +82,16 @@
 
     --accent: 43 96% 56%;
     --accent-foreground: 210 40% 98%;
+
+    /* Premium Colors - Dark Mode */
+    --premium: 45 93% 58%;
+    --premium-foreground: 45 9% 8%;
+    --premium-muted: 45 100% 12%;
+    --premium-border: 45 60% 25%;
+
+    /* Featured Colors - Dark Mode */
+    --featured: 43 96% 56%;
+    --featured-foreground: 45 9% 8%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
@@ -149,6 +173,18 @@
 
   .glass {
     @apply bg-white/80 backdrop-blur-md border border-white/20;
+  }
+
+  .premium-card {
+    @apply bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 shadow-lg shadow-amber-100/50;
+  }
+
+  .premium-badge {
+    @apply bg-gradient-to-r from-amber-500 to-orange-500 text-white;
+  }
+
+  .featured-card {
+    @apply bg-gradient-to-br from-yellow-50 to-amber-50 border border-yellow-200;
   }
 }
 

@@ -13,6 +13,8 @@ import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
 import AdComponent from '@/components/AdComponent';
+import SuggestedAds from '@/components/SuggestedAds';
+import { useUserBehavior } from '@/hooks/useUserBehavior';
 
 type Ad = Database['public']['Tables']['ads']['Row'] & {
   profiles: Database['public']['Tables']['profiles']['Row'];
@@ -25,6 +27,7 @@ const AdDetails = () => {
   const { credits, deductCredit, refreshCredits } = useCredits();
   const { profile, isPremium } = useProfile();
   const { toast } = useToast();
+  const { trackAdView } = useUserBehavior();
   const navigate = useNavigate();
   
   const [ad, setAd] = useState<Ad | null>(null);
@@ -120,6 +123,10 @@ const AdDetails = () => {
         console.log('Ad fetched successfully:', data);
         setAd(data as Ad);
         await trackView();
+        // Track user behavior
+        if (data) {
+          trackAdView(data);
+        }
       }
     } catch (error) {
       console.error('Error in fetchAd:', error);
@@ -654,6 +661,16 @@ const AdDetails = () => {
         
         {/* إعلان في أسفل صفحة التفاصيل */}
         <AdComponent placement="ad_details_bottom" size="large" className="mt-8" />
+
+        {/* Suggested Ads Section */}
+        <SuggestedAds 
+          currentAdId={ad.id}
+          brand={ad.brand}
+          city={ad.city}
+          limit={6}
+          title="سيارات مشابهة"
+          className="mt-8"
+        />
       </div>
     </div>
   );
