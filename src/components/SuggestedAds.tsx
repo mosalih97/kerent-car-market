@@ -1,8 +1,7 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useSuggestedAds } from '@/hooks/useSuggestedAds';
 import { useUpdateUserBehavior } from '@/hooks/usePremiumAds';
-import { Eye } from 'lucide-react';
+import AdCard from '@/components/AdCard';
 
 interface SuggestedAdsProps {
   currentAdId: string;
@@ -17,7 +16,6 @@ const SuggestedAds: React.FC<SuggestedAdsProps> = ({
   city, 
   className = '' 
 }) => {
-  const navigate = useNavigate();
   const { data: suggestedAds, isLoading } = useSuggestedAds(currentAdId, brand, city, 6);
   const updateBehavior = useUpdateUserBehavior();
 
@@ -31,12 +29,6 @@ const SuggestedAds: React.FC<SuggestedAdsProps> = ({
       isPremiumAd: ad.is_premium,
       isFeaturedAd: ad.is_featured
     });
-
-    navigate(`/ad/${ad.id}`);
-  };
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('ar-SD').format(price / 1000000);
   };
 
   if (isLoading) {
@@ -68,51 +60,12 @@ const SuggestedAds: React.FC<SuggestedAdsProps> = ({
       <h3 className="text-lg font-bold mb-2 text-right">إعلانات مقترحة</h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {suggestedAds.map((ad) => (
-          <div 
+          <AdCard 
             key={ad.id}
-            className="border rounded-lg overflow-hidden shadow-sm bg-white text-right cursor-pointer hover:shadow-md transition-shadow duration-200"
-            onClick={() => handleAdClick(ad)}
-          >
-            <div className="relative">
-              <img 
-                src={ad.images?.[0] || "https://images.unsplash.com/photo-1549924231-f129b911e442?w=300&h=200&fit=crop"}
-                alt={ad.title}
-                className="h-24 w-full object-cover"
-              />
-              
-              {/* شارات الإعلان */}
-              <div className="absolute top-1 right-1 flex flex-col gap-0.5">
-                {ad.is_featured && (
-                  <span className="bg-amber-500 text-white text-[6px] px-1 py-0.5 rounded">
-                    مميز
-                  </span>
-                )}
-                {ad.is_premium && (
-                  <span className="bg-purple-500 text-white text-[6px] px-1 py-0.5 rounded">
-                    بريميوم
-                  </span>
-                )}
-              </div>
-
-              {/* عداد المشاهدات */}
-              <div className="absolute bottom-1 left-1">
-                <div className="flex items-center gap-0.5 text-white text-[6px] bg-black/60 px-1 py-0.5 rounded">
-                  <Eye className="w-2 h-2" />
-                  {ad.views_count}
-                </div>
-              </div>
-            </div>
-
-            <div className="p-2">
-              <h4 className="text-sm font-semibold truncate text-gray-800">
-                {ad.title}
-              </h4>
-              <p className="text-xs text-green-600 font-semibold">
-                {formatPrice(ad.price)}م.ج
-              </p>
-              <p className="text-xs text-gray-500">{ad.city}</p>
-            </div>
-          </div>
+            ad={ad}
+            size="small"
+            onClick={handleAdClick}
+          />
         ))}
       </div>
     </div>
