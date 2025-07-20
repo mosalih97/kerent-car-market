@@ -45,14 +45,14 @@ const SuggestedAds: React.FC<SuggestedAdsProps> = ({
     return (
       <div className={`suggested-ads ${className}`}>
         <h3 className="text-xl font-bold text-gray-800 mb-6">إعلانات مقترحة</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <div className="h-32 bg-gray-200 rounded-t-lg"></div>
-              <CardContent className="p-3">
-                <div className="h-3 bg-gray-200 rounded mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded"></div>
+            <Card key={i} className="animate-pulse border border-gray-100">
+              <div className="h-16 sm:h-20 bg-gray-200 rounded-t-lg"></div>
+              <CardContent className="p-1.5">
+                <div className="h-2 bg-gray-200 rounded mb-1"></div>
+                <div className="h-2 bg-gray-200 rounded mb-1"></div>
+                <div className="h-1.5 bg-gray-200 rounded"></div>
               </CardContent>
             </Card>
           ))}
@@ -72,66 +72,66 @@ const SuggestedAds: React.FC<SuggestedAdsProps> = ({
         إعلانات مقترحة لك
       </h3>
       
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
         {suggestedAds.map((ad) => (
           <Card 
             key={ad.id}
-            className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-md overflow-hidden bg-white"
+            className="group hover:shadow-lg transition-all duration-300 cursor-pointer border border-gray-100 hover:border-primary/20 overflow-hidden bg-white"
             onClick={() => handleAdClick(ad)}
           >
             <div className="relative">
               <img 
                 src={ad.images?.[0] || "https://images.unsplash.com/photo-1549924231-f129b911e442?w=300&h=200&fit=crop"}
                 alt={ad.title}
-                className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
+                className="w-full h-16 sm:h-20 object-cover group-hover:scale-105 transition-transform duration-300"
               />
               
               {/* شارات الإعلان */}
-              <div className="absolute top-2 right-2 flex gap-1">
+              <div className="absolute top-1 right-1 flex flex-col gap-0.5">
                 {ad.is_featured && (
-                  <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs px-1.5 py-0.5">
-                    <Star className="w-2.5 h-2.5 ml-1" />
+                  <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-white text-[8px] px-1 py-0.5 h-auto">
+                    <Star className="w-1.5 h-1.5 ml-0.5" />
                     مميز
                   </Badge>
                 )}
                 {ad.is_premium && (
-                  <Badge className="bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs px-1.5 py-0.5">
-                    <Crown className="w-2.5 h-2.5 ml-1" />
+                  <Badge className="bg-gradient-to-r from-purple-500 to-purple-600 text-white text-[8px] px-1 py-0.5 h-auto">
+                    <Crown className="w-1.5 h-1.5 ml-0.5" />
                     بريميوم
                   </Badge>
                 )}
               </div>
 
               {/* عداد المشاهدات */}
-              <div className="absolute bottom-2 left-2">
-                <div className="flex items-center gap-1 text-white text-xs bg-black/50 px-2 py-1 rounded">
-                  <Eye className="w-3 h-3" />
+              <div className="absolute bottom-1 left-1">
+                <div className="flex items-center gap-0.5 text-white text-[8px] bg-black/60 px-1 py-0.5 rounded">
+                  <Eye className="w-2 h-2" />
                   {ad.views_count}
                 </div>
               </div>
             </div>
 
-            <CardContent className="p-3">
-              <h4 className="font-bold text-gray-800 text-sm mb-2 line-clamp-2 leading-tight">
+            <CardContent className="p-1.5">
+              <h4 className="font-semibold text-gray-800 text-[10px] sm:text-xs mb-1 line-clamp-1 leading-tight">
                 {ad.title}
               </h4>
               
-              <div className="space-y-2">
-                <p className="text-lg font-bold text-green-600">
-                  {formatPrice(ad.price)} مليون جنيه
+              <div className="space-y-1">
+                <p className="text-xs sm:text-sm font-bold text-green-600">
+                  {formatPrice(ad.price)}م.ج
                 </p>
                 
-                <div className="flex items-center justify-between text-xs text-gray-600">
-                  <div className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    <span>{ad.city}</span>
+                <div className="flex items-center justify-between text-[8px] sm:text-[10px] text-gray-500">
+                  <div className="flex items-center gap-0.5">
+                    <MapPin className="w-2 h-2" />
+                    <span className="truncate">{ad.city}</span>
                   </div>
-                  <span className="font-medium text-blue-600">{ad.brand}</span>
+                  <span className="font-medium text-blue-600 truncate">{ad.brand}</span>
                 </div>
                 
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-500">السنة: {ad.year}</span>
-                  <span className="text-gray-500">
+                <div className="flex items-center justify-between text-[8px] text-gray-400">
+                  <span>{ad.year}</span>
+                  <span className="truncate">
                     {ad.condition === 'new' ? 'جديد' : 
                      ad.condition === 'excellent' ? 'ممتاز' :
                      ad.condition === 'good' ? 'جيد' :
