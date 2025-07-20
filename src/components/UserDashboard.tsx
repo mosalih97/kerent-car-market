@@ -12,7 +12,6 @@ import CreateAdModal from './CreateAdModal';
 import PremiumCard from './PremiumCard';
 import EditAdModal from './EditAdModal';
 import AccountSettingsModal from './AccountSettingsModal';
-import AdCard from './AdCard';
 
 const UserDashboard = () => {
   const { user, signOut } = useAuth();
@@ -135,15 +134,62 @@ const UserDashboard = () => {
             ) : myAds && myAds.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {myAds.map((ad) => (
-                  <AdCard
-                    key={ad.id}
-                    ad={ad}
-                    size="medium"
-                    showActions={true}
-                    onEdit={handleEditAd}
-                    onDelete={(adToDelete) => handleDeleteAd(adToDelete.id)}
-                    isDeleting={deleteAdMutation.isPending}
-                  />
+                  <Card key={ad.id} className="group hover:shadow-lg transition-shadow">
+                    <div className="relative">
+                      <img 
+                        src={ad.images?.[0] || "https://images.unsplash.com/photo-1549924231-f129b911e442?w=400&h=300&fit=crop"}
+                        alt={ad.title}
+                        className="w-full h-48 object-cover rounded-t-lg"
+                      />
+                      <div className="absolute top-2 right-2 flex gap-1">
+                        {ad.is_featured && (
+                          <Badge className="bg-yellow-500 text-white">مميز</Badge>
+                        )}
+                        {!ad.is_active && (
+                          <Badge variant="secondary">غير نشط</Badge>
+                        )}
+                      </div>
+                      <div className="absolute bottom-2 left-2">
+                        <Badge variant="secondary" className="bg-white/90">
+                          <Eye className="w-3 h-3 ml-1" />
+                          {ad.views_count}
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <CardContent className="p-4">
+                      <h3 className="font-semibold text-lg mb-2 group-hover:text-blue-600 transition-colors">
+                        {ad.title}
+                      </h3>
+                      <p className="text-2xl font-bold text-green-600 mb-2">
+                        {formatPrice(ad.price)} مليون جنيه
+                      </p>
+                      <p className="text-sm text-gray-600 mb-4">
+                        تم النشر في {formatDate(ad.created_at)}
+                      </p>
+                      
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="flex-1"
+                          onClick={() => handleEditAd(ad)}
+                        >
+                          <Edit className="w-4 h-4 ml-2" />
+                          تعديل
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="destructive" 
+                          onClick={() => handleDeleteAd(ad.id)}
+                          disabled={deleteAdMutation.isPending}
+                        >
+                          <Trash2 className="w-4 h-4 ml-2" />
+                          حذف
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             ) : (

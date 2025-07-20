@@ -12,7 +12,6 @@ import { useSearch } from "@/hooks/useSearch";
 import CreateAdModal from "@/components/CreateAdModal";
 import PremiumCard from "@/components/PremiumCard";
 import { useProfile } from "@/hooks/useProfile";
-import AdCard from "@/components/AdCard";
 import SmartAdComponent from "@/components/SmartAdComponent";
 
 const Index = () => {
@@ -344,10 +343,96 @@ const Index = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {displayAds?.map((ad, index) => (
                 <div key={ad.id}>
-                  <AdCard 
-                    ad={ad}
-                    size="large"
-                  />
+                  <Card className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg overflow-hidden bg-white cursor-pointer">
+                  <div className="relative">
+                    <img 
+                      src={ad.images?.[0] || "https://images.unsplash.com/photo-1549924231-f129b911e442?w=400&h=300&fit=crop"}
+                      alt={ad.title}
+                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute top-4 right-4 flex gap-2">
+                      {ad.is_featured && (
+                        <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-white border-0">
+                          <Star className="w-3 h-3 ml-1" />
+                          مميز
+                        </Badge>
+                      )}
+                      {ad.is_premium && (
+                        <Badge className="bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0">
+                          بريميوم
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="absolute bottom-4 left-4">
+                      <div className="flex items-center gap-1 text-white text-sm bg-black/50 px-2 py-1 rounded">
+                        <Eye className="w-3 h-3" />
+                        {ad.views_count}
+                      </div>
+                    </div>
+                  </div>
+
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-gray-800 mb-2 line-clamp-2">{ad.title}</h3>
+                        <p className="text-2xl font-bold text-green-600 mb-3">
+                          {formatPrice(ad.price)} مليون جنيه
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="flex items-center text-gray-600">
+                          <Car className="w-4 h-4 ml-2 text-blue-500" />
+                          <span>{ad.brand} {ad.model}</span>
+                        </div>
+                        <div className="flex items-center text-gray-600">
+                          <MapPin className="w-4 h-4 ml-2 text-red-500" />
+                          <span>{ad.city}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="text-gray-600">
+                          <span className="font-medium">السنة:</span> {ad.year}
+                        </div>
+                        <div className="text-gray-600">
+                          <span className="font-medium">الحالة:</span> {
+                            ad.condition === 'new' ? 'جديد' : 
+                            ad.condition === 'excellent' ? 'ممتاز' :
+                            ad.condition === 'good' ? 'جيد' :
+                            ad.condition === 'fair' ? 'مقبول' : 'مستعمل'
+                          }
+                        </div>
+                      </div>
+
+                      {ad.mileage && (
+                        <div className="text-sm text-gray-600">
+                          <span className="font-medium">المسافة المقطوعة:</span> {new Intl.NumberFormat('ar-SD').format(ad.mileage)} كم
+                        </div>
+                      )}
+
+                      <div className="pt-4 border-t">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center text-gray-500 text-xs">
+                            <span>بواسطة {ad.profiles?.full_name}</span>
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {formatDate(ad.created_at)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button 
+                      onClick={() => handleAdClick(ad.id)}
+                      className="w-full mt-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium py-3"
+                    >
+                      عرض التفاصيل
+                    </Button>
+                  </CardContent>
+                  </Card>
                   
                   {/* إعلانات ذكية بين الإعلانات كل 6 إعلانات */}
                   {(index + 1) % 6 === 0 && (
