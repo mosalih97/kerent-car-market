@@ -14,7 +14,6 @@ import PremiumCard from "@/components/PremiumCard";
 import { useProfile } from "@/hooks/useProfile";
 import AdComponent from "@/components/AdComponent";
 import SuggestedAds from "@/components/SuggestedAds";
-import ExternalAdBanner from "@/components/ExternalAdBanner";
 import { useUserBehavior } from "@/hooks/useUserBehavior";
 
 const Index = () => {
@@ -314,13 +313,8 @@ const Index = () => {
         </section>
       )}
 
-      {/* إعلانات AdSense في أعلى الصفحة */}
-      <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <AdComponent placement="header_left" size="medium" />
-          <AdComponent placement="header_right" size="medium" />
-        </div>
-      </div>
+      {/* إعلان في أعلى الصفحة */}
+      <AdComponent placement="header_banner" size="large" className="container mx-auto px-4 py-4" />
 
       {/* Ads Section */}
       <section className="py-16">
@@ -338,7 +332,7 @@ const Index = () => {
           </div>
 
           {isLoadingAds ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <Card key={i} className="animate-pulse">
                   <div className="h-48 bg-gray-200 rounded-t-lg"></div>
@@ -351,27 +345,22 @@ const Index = () => {
               ))}
             </div>
           ) : (
-            <div className="space-y-8">
-              {/* عرض الإعلانات في شبكة متجاوبة */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6">
-                {displayAds?.map((ad, index) => {
-                  const isPremium = ad.is_premium || ad.profiles?.is_premium;
-                  const isFeatured = ad.is_featured;
-                  
-                  return (
-                    <Card 
-                      key={ad.id} 
-                      className={`group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg overflow-hidden bg-white cursor-pointer ${
-                        isPremium ? 'premium-card ring-2 ring-amber-300' : 
-                        isFeatured ? 'featured-card' : ''
-                      }`}
-                      onClick={() => handleAdClick(ad)}
-                    >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {displayAds?.map((ad, index) => {
+                const isPremium = ad.is_premium || ad.profiles?.is_premium;
+                const isFeatured = ad.is_featured;
+                
+                return (
+                  <div key={ad.id}>
+                    <Card className={`group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg overflow-hidden bg-white cursor-pointer ${
+                      isPremium ? 'premium-card ring-2 ring-amber-300' : 
+                      isFeatured ? 'featured-card' : ''
+                    }`}>
                       <div className="relative">
                         <img 
                           src={ad.images?.[0] || "https://images.unsplash.com/photo-1549924231-f129b911e442?w=400&h=300&fit=crop"}
                           alt={ad.title}
-                          className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                         <div className="absolute top-4 right-4 flex gap-2">
                           {isPremium && (
@@ -395,16 +384,17 @@ const Index = () => {
                         </div>
                       </div>
 
-                      <CardContent className="p-4 sm:p-6">
+                      <CardContent className="p-6">
                         <div className="mb-4">
                           <h3 
-                            className={`text-lg sm:text-xl font-bold mb-2 group-hover:text-blue-600 transition-colors cursor-pointer line-clamp-2 ${
+                            className={`text-xl font-bold mb-2 group-hover:text-blue-600 transition-colors cursor-pointer line-clamp-2 ${
                               isPremium ? 'text-amber-700' : 'text-gray-800'
                             }`}
+                            onClick={() => handleAdClick(ad)}
                           >
                             {ad.title}
                           </h3>
-                          <p className={`text-2xl sm:text-3xl font-bold mb-3 ${
+                          <p className={`text-3xl font-bold mb-3 ${
                             isPremium ? 'text-amber-600' : 'text-green-600'
                           }`}>
                             {formatPrice(ad.price)} مليون جنيه
@@ -450,27 +440,23 @@ const Index = () => {
                                 ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700' 
                                 : 'bg-blue-600 hover:bg-blue-700'
                             }`}
+                            onClick={() => handleAdClick(ad)}
                           >
                             مشاهدة التفاصيل
                           </Button>
                         </div>
                       </CardContent>
                     </Card>
-                  );
-                })}
-              </div>
-              
-              {/* إدراج إعلانات AdSense بين كل 4 بطاقات */}
-              {displayAds && displayAds.length > 0 && (
-                <>
-                  {Array.from({ length: Math.floor(displayAds.length / 4) }, (_, groupIndex) => (
-                    <div key={`ad-group-${groupIndex}`} className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-                      <AdComponent placement={`grid_left_${groupIndex}`} size="medium" />
-                      <AdComponent placement={`grid_right_${groupIndex}`} size="medium" />
-                    </div>
-                  ))}
-                </>
-              )}
+                    
+                    {/* إعلان بين الإعلانات كل 6 إعلانات */}
+                    {(index + 1) % 6 === 0 && (
+                      <div className="md:col-span-2 lg:col-span-3">
+                        <AdComponent placement="between_ads" size="large" className="w-full" />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
 
