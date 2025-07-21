@@ -656,21 +656,24 @@ const AdDetails = () => {
                 )}
               </CardContent>
             </Card>
+
+            {/* السيارات المقترحة أسفل معلومات البائع */}
+            <div className="mt-6">
+              <SuggestedAds 
+                currentAdId={ad.id}
+                brand={ad.brand}
+                city={ad.city}
+                limit={6}
+                title="سيارات مقترحة"
+                className=""
+              />
+            </div>
           </div>
         </div>
         
         {/* إعلان في أسفل صفحة التفاصيل */}
         <AdComponent placement="ad_details_bottom" size="large" className="mt-8" />
 
-        {/* Suggested Ads Section */}
-        <SuggestedAds 
-          currentAdId={ad.id}
-          brand={ad.brand}
-          city={ad.city}
-          limit={6}
-          title="سيارات مشابهة"
-          className="mt-8"
-        />
       </div>
     </div>
   );
