@@ -39,7 +39,8 @@ const SuggestedAds = ({
 
   const handleAdClick = (ad: any) => {
     trackAdView(ad);
-    navigate(`/ad/${ad.id}`);
+    // استخدام window.location لضمان إعادة تحميل كامل للصفحة
+    window.location.href = `/ad/${ad.id}`;
   };
 
   const formatPrice = (price: number) => {
