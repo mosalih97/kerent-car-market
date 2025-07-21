@@ -30,59 +30,103 @@ export const useSuggestedAds = ({ currentAdId, brand, city, limit = 6 }: Suggest
         `)
         .eq('is_active', true);
 
-      // عرض الإعلانات المميزة فقط (is_premium أو من مستخدمين مميزين)
-      query = query.or('is_premium.eq.true,profiles.is_premium.eq.true,is_featured.eq.true');
-
       // استبعاد الإعلان الحالي
       if (currentAdId) {
         query = query.neq('id', currentAdId);
       }
 
-      // إعطاء أولوية للإعلانات المطابقة للعلامة التجارية والمدينة
-      let primaryQuery = query;
-
-      if (brand || city) {
-        if (brand) {
-          primaryQuery = primaryQuery.eq('brand', brand);
-        }
-        if (city) {
-          primaryQuery = primaryQuery.eq('city', city);
-        }
-      }
-
-      // ترتيب حسب الأولوية: مميز > مروّج، ثم حسب التاريخ
-      const orderQuery = primaryQuery
-        .order('is_premium', { ascending: false })
-        .order('is_featured', { ascending: false })
+      // البحث عن الإعلانات المميزة والمروجة
+      const { data: premiumAds, error: premiumError } = await query
+        .eq('is_premium', true)
         .order('created_at', { ascending: false })
-        .limit(limit);
+        .limit(Math.ceil(limit / 2));
 
-      const { data, error } = await orderQuery;
-
-      if (error) {
-        console.error('Error fetching suggested ads:', error);
-        throw error;
+      if (premiumError) {
+        console.error('Error fetching premium ads:', premiumError);
       }
 
-      console.log('Premium suggested ads fetched:', data?.length);
+      const { data: featuredAds, error: featuredError } = await query
+        .eq('is_featured', true)
+        .order('created_at', { ascending: false })
+        .limit(Math.ceil(limit / 2));
 
-      // إذا لم نحصل على عدد كافي من النتائج ولدينا فلاتر، جرب بدون فلاتر لكن مع الحفاظ على شرط المميز
-      if (data && data.length < limit && (brand || city)) {
-        const { data: fallbackData, error: fallbackError } = await query
-          .order('is_premium', { ascending: false })
-          .order('is_featured', { ascending: false })
-          .order('created_at', { ascending: false })
-          .limit(limit - data.length);
+      if (featuredError) {
+        console.error('Error fetching featured ads:', featuredError);
+      }
 
-        if (!fallbackError && fallbackData) {
-          // دمج النتائج وإزالة التكرارات
-          const allIds = data.map(ad => ad.id);
-          const newAds = fallbackData.filter(ad => !allIds.includes(ad.id));
-          return [...data, ...newAds];
+      // البحث عن إعلانات من مستخدمين مميزين
+      const { data: premiumUserAds, error: premiumUserError } = await supabase
+        .from('ads')
+        .select(`
+          *,
+          profiles!inner(*)
+        `)
+        .eq('is_active', true)
+        .eq('profiles.is_premium', true)
+        .neq('id', currentAdId || '')
+        .order('created_at', { ascending: false })
+        .limit(Math.ceil(limit / 2));
+
+      if (premiumUserError) {
+        console.error('Error fetching premium user ads:', premiumUserError);
+      }
+
+      // دمج جميع النتائج وإزالة التكرارات
+      const allAds = [
+        ...(premiumAds || []),
+        ...(featuredAds || []),
+        ...(premiumUserAds || [])
+      ];
+
+      // إزالة التكرارات
+      const uniqueAds = allAds.filter((ad, index, self) => 
+        index === self.findIndex(a => a.id === ad.id)
+      );
+
+      // فلترة حسب الماركة والمدينة إذا توفرت
+      let filteredAds = uniqueAds;
+      
+      if (brand || city) {
+        const matchingAds = uniqueAds.filter(ad => 
+          (!brand || ad.brand === brand) && 
+          (!city || ad.city === city)
+        );
+        
+        if (matchingAds.length >= limit) {
+          filteredAds = matchingAds;
+        } else {
+          // إضافة المزيد من الإعلانات بدون فلاتر إذا لم تكن كافية
+          filteredAds = [
+            ...matchingAds,
+            ...uniqueAds.filter(ad => 
+              !matchingAds.some(ma => ma.id === ad.id)
+            ).slice(0, limit - matchingAds.length)
+          ];
         }
       }
 
-      return data as Ad[] || [];
+      // ترتيب النتائج حسب الأولوية
+      const sortedAds = filteredAds.sort((a, b) => {
+        // أولوية للإعلانات المميزة
+        if (a.is_premium && !b.is_premium) return -1;
+        if (!a.is_premium && b.is_premium) return 1;
+        
+        // ثم الإعلانات المروجة
+        if (a.is_featured && !b.is_featured) return -1;
+        if (!a.is_featured && b.is_featured) return 1;
+        
+        // ثم إعلانات المستخدمين المميزين
+        if (a.profiles?.is_premium && !b.profiles?.is_premium) return -1;
+        if (!a.profiles?.is_premium && b.profiles?.is_premium) return 1;
+        
+        // أخيراً حسب التاريخ
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+
+      const finalAds = sortedAds.slice(0, limit);
+      console.log('Suggested ads fetched successfully:', finalAds.length);
+      
+      return finalAds as Ad[] || [];
     },
     enabled: true,
     staleTime: 5 * 60 * 1000, // 5 minutes
