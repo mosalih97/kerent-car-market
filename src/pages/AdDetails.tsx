@@ -482,21 +482,27 @@ const AdDetails = () => {
                         >
                           <div className="flex items-center justify-center gap-2 text-green-800">
                             <Phone className="w-4 h-4" />
-                            <span className="font-medium">رقم الهاتف</span>
+                            <span className="font-medium">اضغط للإتصال بالبائع</span>
                           </div>
                           <span className="font-medium text-lg text-green-700" dir="ltr">{ad.phone}</span>
                         </button>
 
                         {/* جدول واتساب */}
-                        <button
-                          onClick={openWhatsApp}
-                          className="w-full p-4 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors cursor-pointer"
-                        >
-                          <div className="flex items-center justify-center gap-2">
-                            <span className="font-medium">واتساب</span>
+                        <div className="space-y-2">
+                          <div className="text-center">
+                            <span className="text-sm text-gray-600">اضغط للمراسلة عبر واتساب</span>
                           </div>
-                          <span className="text-sm opacity-90">أنا مهتم بهذا العرض</span>
-                        </button>
+                          <button
+                            onClick={openWhatsApp}
+                            className="w-full p-4 bg-yellow-400 hover:bg-yellow-500 text-gray-800 rounded-lg transition-colors cursor-pointer border-2 border-yellow-500"
+                          >
+                            <div className="flex items-center justify-center gap-2">
+                              <Phone className="w-4 h-4" />
+                              <span className="font-medium">جهة واتساب</span>
+                            </div>
+                            <span className="font-medium text-lg" dir="ltr">{ad.phone}</span>
+                          </button>
+                        </div>
                       </div>
                     ) : (
                       <div className="space-y-3">
