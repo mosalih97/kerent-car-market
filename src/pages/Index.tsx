@@ -349,10 +349,11 @@ const Index = () => {
               {displayAds?.map((ad, index) => {
                 const isPremium = ad.is_premium || ad.profiles?.is_premium;
                 const isFeatured = ad.is_featured;
+                const showSponsoredAd = (index + 1) % 2 === 0; // بعد كل بطاقتين
                 
                 return (
-                  <div key={ad.id}>
-                    <Card className={`group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg overflow-hidden bg-white cursor-pointer ${
+                  <>
+                    <Card key={ad.id} className={`group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg overflow-hidden bg-white cursor-pointer ${
                       isPremium ? 'premium-card ring-2 ring-amber-300' : 
                       isFeatured ? 'featured-card' : ''
                     }`}>
@@ -448,13 +449,32 @@ const Index = () => {
                       </CardContent>
                     </Card>
                     
-                    {/* إعلان بين الإعلانات كل 6 إعلانات */}
-                    {(index + 1) % 6 === 0 && (
-                      <div className="md:col-span-2 lg:col-span-3">
-                        <AdComponent placement="between_ads" size="large" className="w-full" />
+                    {/* جدول إعلانات ممولة صغير بعد كل بطاقتين */}
+                    {showSponsoredAd && (
+                      <div className="col-span-1 md:col-span-2 lg:col-span-3 my-4">
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs text-gray-500 font-medium">إعلانات ممولة</span>
+                            <Badge variant="outline" className="text-xs">
+                              Sponsored
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <AdComponent 
+                              placement="sponsored_small" 
+                              size="medium" 
+                              className="h-20 rounded-md"
+                            />
+                            <AdComponent 
+                              placement="sponsored_small" 
+                              size="medium" 
+                              className="h-20 rounded-md"
+                            />
+                          </div>
+                        </div>
                       </div>
                     )}
-                  </div>
+                  </>
                 );
               })}
             </div>

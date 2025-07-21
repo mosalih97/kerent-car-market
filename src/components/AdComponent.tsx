@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 interface AdComponentProps {
-  placement: 'header_banner' | 'sidebar_ad' | 'between_ads' | 'footer_banner' | 'ad_details_top' | 'ad_details_bottom';
+  placement: 'header_banner' | 'sidebar_ad' | 'between_ads' | 'footer_banner' | 'ad_details_top' | 'ad_details_bottom' | 'sponsored_small';
   className?: string;
   size?: 'small' | 'medium' | 'large';
   adContent?: React.ReactNode;
@@ -32,7 +32,8 @@ const AdComponent = memo(({ placement, className = '', size = 'medium', adConten
     between_ads: 'إعلان ممول',
     footer_banner: 'إعلان',
     ad_details_top: 'إعلان ممول',
-    ad_details_bottom: 'إعلان ممول'
+    ad_details_bottom: 'إعلان ممول',
+    sponsored_small: 'إعلان مدفوع'
   };
 
   return (
