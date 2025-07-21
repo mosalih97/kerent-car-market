@@ -30,6 +30,9 @@ export const useSuggestedAds = ({ currentAdId, brand, city, limit = 6 }: Suggest
         `)
         .eq('is_active', true);
 
+      // عرض الإعلانات المميزة فقط (is_premium أو من مستخدمين مميزين)
+      query = query.or('is_premium.eq.true,profiles.is_premium.eq.true');
+
       // استبعاد الإعلان الحالي
       if (currentAdId) {
         query = query.neq('id', currentAdId);
@@ -37,10 +40,8 @@ export const useSuggestedAds = ({ currentAdId, brand, city, limit = 6 }: Suggest
 
       // إعطاء أولوية للإعلانات المطابقة للعلامة التجارية والمدينة
       let primaryQuery = query;
-      let fallbackQuery = query;
 
       if (brand || city) {
-        primaryQuery = query;
         if (brand) {
           primaryQuery = primaryQuery.eq('brand', brand);
         }
@@ -49,7 +50,7 @@ export const useSuggestedAds = ({ currentAdId, brand, city, limit = 6 }: Suggest
         }
       }
 
-      // ترتيب حسب الأولوية: مميز > بريميوم > عادي، ثم حسب التاريخ
+      // ترتيب حسب الأولوية: مميز > مروّج، ثم حسب التاريخ
       const orderQuery = primaryQuery
         .order('is_premium', { ascending: false })
         .order('is_featured', { ascending: false })
@@ -63,9 +64,9 @@ export const useSuggestedAds = ({ currentAdId, brand, city, limit = 6 }: Suggest
         throw error;
       }
 
-      console.log('Suggested ads fetched:', data?.length);
+      console.log('Premium suggested ads fetched:', data?.length);
 
-      // إذا لم نحصل على عدد كافي من النتائج ولدينا فلاتر، جرب بدون فلاتر
+      // إذا لم نحصل على عدد كافي من النتائج ولدينا فلاتر، جرب بدون فلاتر لكن مع الحفاظ على شرط المميز
       if (data && data.length < limit && (brand || city)) {
         const { data: fallbackData, error: fallbackError } = await query
           .order('is_premium', { ascending: false })
