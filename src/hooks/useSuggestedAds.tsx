@@ -31,7 +31,7 @@ export const useSuggestedAds = ({ currentAdId, brand, city, limit = 6 }: Suggest
         .eq('is_active', true);
 
       // عرض الإعلانات المميزة فقط (is_premium أو من مستخدمين مميزين)
-      query = query.or('is_premium.eq.true,profiles.is_premium.eq.true');
+      query = query.or('is_premium.eq.true,profiles.is_premium.eq.true,is_featured.eq.true');
 
       // استبعاد الإعلان الحالي
       if (currentAdId) {

@@ -34,6 +34,7 @@ const AdDetails = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showContactInfo, setShowContactInfo] = useState(false);
   const [isRevealing, setIsRevealing] = useState(false);
+  const [hasRevealedInSession, setHasRevealedInSession] = useState(false);
 
   // إخفاء التفاصيل عند مغادرة الصفحة
   useEffect(() => {
@@ -137,9 +138,12 @@ const AdDetails = () => {
   const checkIfContactRevealed = async () => {
     if (!user || !id) return;
 
-    // المستخدمون المميزون يمكنهم رؤية المعلومات فوراً
-    if (isPremium) {
-      setShowContactInfo(true);
+    // إخفاء معلومات البائع عند كل تحديث/تحميل جديد للصفحة
+    setShowContactInfo(false);
+    setHasRevealedInSession(false);
+
+    // المستخدمون المميزون يمكنهم رؤية المعلومات فوراً فقط في الجلسة الحالية
+    if (isPremium && !hasRevealedInSession) {
       return;
     }
 
@@ -156,9 +160,9 @@ const AdDetails = () => {
         return;
       }
 
-      if (data) {
-        console.log('Contact already revealed for this user');
-        setShowContactInfo(true);
+      // حتى لو كانت المعلومات مكشوفة من قبل، يجب على المستخدم دفع كريديت في كل جلسة جديدة
+      if (data && !isPremium) {
+        console.log('Contact was revealed before, but user needs to pay credit again for new session');
       }
     } catch (error) {
       console.error('Error in checkIfContactRevealed:', error);
@@ -197,6 +201,7 @@ const AdDetails = () => {
     // المستخدمون المميزون لا يحتاجون لكريديت
     if (isPremium) {
       setShowContactInfo(true);
+      setHasRevealedInSession(true);
       toast({
         title: "تم بنجاح",
         description: "معلومات الاتصال متاحة للمستخدمين المميزين",
@@ -217,30 +222,7 @@ const AdDetails = () => {
     console.log('Starting contact reveal process for user:', user.id, 'ad:', ad.id);
 
     try {
-      // أولاً نتحقق من عدم وجود كشف سابق
-      const { data: existingReveal, error: checkError } = await supabase
-        .from('contact_reveals')
-        .select('id')
-        .eq('ad_id', ad.id)
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (checkError) {
-        console.error('Error checking existing reveal:', checkError);
-        throw new Error('فشل في التحقق من الكشف السابق');
-      }
-
-      if (existingReveal) {
-        console.log('Contact already revealed, showing contact info');
-        setShowContactInfo(true);
-        toast({
-          title: "تم بنجاح",
-          description: "معلومات الاتصال متاحة بالفعل",
-        });
-        return;
-      }
-
-      // خصم الكريديت أولاً
+      // خصم الكريديت في كل مرة (حتى لو كانت المعلومات مكشوفة من قبل)
       console.log('Attempting to deduct credit...');
       const creditDeducted = await deductCredit();
       
@@ -259,7 +241,7 @@ const AdDetails = () => {
           user_id: user.id
         });
 
-      if (insertError) {
+      if (insertError && !insertError.code.includes('23505')) {
         console.error('Error inserting contact reveal:', insertError);
         // في حالة فشل تسجيل الكشف، نحاول إعادة الكريديت
         await refreshCredits();
@@ -268,6 +250,7 @@ const AdDetails = () => {
 
       console.log('Contact reveal recorded successfully');
       setShowContactInfo(true);
+      setHasRevealedInSession(true);
       toast({
         title: "تم بنجاح",
         description: "تم عرض معلومات الاتصال",
@@ -285,7 +268,6 @@ const AdDetails = () => {
       setIsRevealing(false);
     }
   };
-
 
   const openWhatsApp = () => {
     if (ad?.phone) {
