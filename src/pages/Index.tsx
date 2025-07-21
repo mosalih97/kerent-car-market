@@ -349,7 +349,7 @@ const Index = () => {
               {displayAds?.map((ad, index) => {
                 const isPremium = ad.is_premium || ad.profiles?.is_premium;
                 const isFeatured = ad.is_featured;
-                const showSponsoredAd = (index + 1) % 2 === 0; // بعد كل بطاقتين
+                const showSponsoredAd = index === 1; // جدول واحد فقط بعد البطاقة الثانية
                 
                 return (
                   <>
