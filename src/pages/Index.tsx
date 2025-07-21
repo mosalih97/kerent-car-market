@@ -14,6 +14,7 @@ import PremiumCard from "@/components/PremiumCard";
 import { useProfile } from "@/hooks/useProfile";
 import AdComponent from "@/components/AdComponent";
 import SuggestedAds from "@/components/SuggestedAds";
+import ExternalAdBanner from "@/components/ExternalAdBanner";
 import { useUserBehavior } from "@/hooks/useUserBehavior";
 
 const Index = () => {
@@ -345,114 +346,124 @@ const Index = () => {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="space-y-8">
               {displayAds?.map((ad, index) => {
                 const isPremium = ad.is_premium || ad.profiles?.is_premium;
                 const isFeatured = ad.is_featured;
                 
                 return (
                   <div key={ad.id}>
-                    <Card className={`group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg overflow-hidden bg-white cursor-pointer ${
-                      isPremium ? 'premium-card ring-2 ring-amber-300' : 
-                      isFeatured ? 'featured-card' : ''
-                    }`}>
-                      <div className="relative">
-                        <img 
-                          src={ad.images?.[0] || "https://images.unsplash.com/photo-1549924231-f129b911e442?w=400&h=300&fit=crop"}
-                          alt={ad.title}
-                          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                        <div className="absolute top-4 right-4 flex gap-2">
-                          {isPremium && (
-                            <Badge className="premium-badge border-0">
-                              <Star className="w-3 h-3 ml-1" />
-                              مميز
-                            </Badge>
-                          )}
-                          {isFeatured && !isPremium && (
-                            <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0">
-                              <Star className="w-3 h-3 ml-1" />
-                              مُروّج
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="absolute bottom-4 left-4">
-                          <Badge variant="outline" className="bg-black/70 text-white border-none">
-                            <Eye className="w-3 h-3 ml-1" />
-                            {ad.views_count}
-                          </Badge>
-                        </div>
+                    {/* عرض الإعلانات في شبكة */}
+                    {index % 3 === 0 && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {displayAds.slice(index, index + 3).map((currentAd) => {
+                          const currentIsPremium = currentAd.is_premium || currentAd.profiles?.is_premium;
+                          const currentIsFeatured = currentAd.is_featured;
+                          
+                          return (
+                            <Card key={currentAd.id} className={`group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg overflow-hidden bg-white cursor-pointer ${
+                              currentIsPremium ? 'premium-card ring-2 ring-amber-300' : 
+                              currentIsFeatured ? 'featured-card' : ''
+                            }`}>
+                              <div className="relative">
+                                <img 
+                                  src={currentAd.images?.[0] || "https://images.unsplash.com/photo-1549924231-f129b911e442?w=400&h=300&fit=crop"}
+                                  alt={currentAd.title}
+                                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                                <div className="absolute top-4 right-4 flex gap-2">
+                                  {currentIsPremium && (
+                                    <Badge className="premium-badge border-0">
+                                      <Star className="w-3 h-3 ml-1" />
+                                      مميز
+                                    </Badge>
+                                  )}
+                                  {currentIsFeatured && !currentIsPremium && (
+                                    <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0">
+                                      <Star className="w-3 h-3 ml-1" />
+                                      مُروّج
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="absolute bottom-4 left-4">
+                                  <Badge variant="outline" className="bg-black/70 text-white border-none">
+                                    <Eye className="w-3 h-3 ml-1" />
+                                    {currentAd.views_count}
+                                  </Badge>
+                                </div>
+                              </div>
+
+                              <CardContent className="p-6">
+                                <div className="mb-4">
+                                  <h3 
+                                    className={`text-xl font-bold mb-2 group-hover:text-blue-600 transition-colors cursor-pointer line-clamp-2 ${
+                                      currentIsPremium ? 'text-amber-700' : 'text-gray-800'
+                                    }`}
+                                    onClick={() => handleAdClick(currentAd)}
+                                  >
+                                    {currentAd.title}
+                                  </h3>
+                                  <p className={`text-3xl font-bold mb-3 ${
+                                    currentIsPremium ? 'text-amber-600' : 'text-green-600'
+                                  }`}>
+                                    {formatPrice(currentAd.price)} مليون جنيه
+                                  </p>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
+                                  <div className="flex items-center gap-2">
+                                    <MapPin className="w-4 h-4" />
+                                    <span>{currentAd.city}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span>سنة الصنع: {currentAd.year}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span>{currentAd.brand}</span>
+                                  </div>
+                                  <div className="text-gray-500 text-xs">
+                                    {formatDate(currentAd.created_at)}
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center justify-between pt-4 border-t">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                      <span className="text-sm font-semibold text-blue-600">
+                                        {(currentAd.profiles as any)?.full_name?.charAt(0) || 'م'}
+                                      </span>
+                                    </div>
+                                    <div>
+                                      <p className="text-sm font-medium text-gray-800">
+                                        {(currentAd.profiles as any)?.full_name || 'مستخدم'}
+                                      </p>
+                                      {(currentAd.profiles as any)?.is_premium && (
+                                        <p className="text-xs text-amber-600">موثق ✓</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <Button 
+                                    size="sm" 
+                                    className={`${
+                                      currentIsPremium 
+                                        ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700' 
+                                        : 'bg-blue-600 hover:bg-blue-700'
+                                    }`}
+                                    onClick={() => handleAdClick(currentAd)}
+                                  >
+                                    مشاهدة التفاصيل
+                                  </Button>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
                       </div>
-
-                      <CardContent className="p-6">
-                        <div className="mb-4">
-                          <h3 
-                            className={`text-xl font-bold mb-2 group-hover:text-blue-600 transition-colors cursor-pointer line-clamp-2 ${
-                              isPremium ? 'text-amber-700' : 'text-gray-800'
-                            }`}
-                            onClick={() => handleAdClick(ad)}
-                          >
-                            {ad.title}
-                          </h3>
-                          <p className={`text-3xl font-bold mb-3 ${
-                            isPremium ? 'text-amber-600' : 'text-green-600'
-                          }`}>
-                            {formatPrice(ad.price)} مليون جنيه
-                          </p>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
-                          <div className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4" />
-                            <span>{ad.city}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span>سنة الصنع: {ad.year}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span>{ad.brand}</span>
-                          </div>
-                          <div className="text-gray-500 text-xs">
-                            {formatDate(ad.created_at)}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between pt-4 border-t">
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                              <span className="text-sm font-semibold text-blue-600">
-                                {(ad.profiles as any)?.full_name?.charAt(0) || 'م'}
-                              </span>
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-800">
-                                {(ad.profiles as any)?.full_name || 'مستخدم'}
-                              </p>
-                              {(ad.profiles as any)?.is_premium && (
-                                <p className="text-xs text-amber-600">موثق ✓</p>
-                              )}
-                            </div>
-                          </div>
-                          <Button 
-                            size="sm" 
-                            className={`${
-                              isPremium 
-                                ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700' 
-                                : 'bg-blue-600 hover:bg-blue-700'
-                            }`}
-                            onClick={() => handleAdClick(ad)}
-                          >
-                            مشاهدة التفاصيل
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    )}
                     
-                    {/* إعلان بين الإعلانات كل 6 إعلانات */}
-                    {(index + 1) % 6 === 0 && (
-                      <div className="md:col-span-2 lg:col-span-3">
-                        <AdComponent placement="between_ads" size="large" className="w-full" />
-                      </div>
+                    {/* إعلان خارجي بين كل صفين من الإعلانات */}
+                    {(index + 1) % 2 === 0 && index !== displayAds.length - 1 && (
+                      <ExternalAdBanner className="container mx-auto px-4" />
                     )}
                   </div>
                 );
