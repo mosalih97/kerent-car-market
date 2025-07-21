@@ -1,11 +1,10 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, MapPin, Calendar, Gauge, Phone, Star, Eye, Heart } from 'lucide-react';
+import { ArrowRight, MapPin, Calendar, Gauge, Phone, Star, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
@@ -35,20 +34,16 @@ const AdDetails = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showContactInfo, setShowContactInfo] = useState(false);
   const [isRevealing, setIsRevealing] = useState(false);
-  const [messageContent, setMessageContent] = useState('');
-  const [showMessageBox, setShowMessageBox] = useState(false);
 
   // إخفاء التفاصيل عند مغادرة الصفحة
   useEffect(() => {
     const handleBeforeUnload = () => {
       setShowContactInfo(false);
-      setShowMessageBox(false);
     };
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
         setShowContactInfo(false);
-        setShowMessageBox(false);
       }
     };
 
@@ -60,7 +55,6 @@ const AdDetails = () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       // إخفاء التفاصيل عند إلغاء تحميل المكون
       setShowContactInfo(false);
-      setShowMessageBox(false);
     };
   }, []);
 
@@ -292,77 +286,17 @@ const AdDetails = () => {
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!user || !ad) {
-      toast({
-        title: "خطأ",
-        description: "يجب تسجيل الدخول أولاً",
-        variant: "destructive",
-      });
-      return;
-    }
 
-    if (!messageContent.trim()) {
-      toast({
-        title: "خطأ",
-        description: "يرجى كتابة رسالة",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // المستخدمون المميزون لا يحتاجون لكريديت
-    if (!isPremium && credits < 1) {
-      toast({
-        title: "رصيد غير كافي",
-        description: "ليس لديك كريديت كافي لإرسال رسالة",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      // خصم الكريديت فقط للمستخدمين غير المميزين
-      if (!isPremium) {
-        const creditDeducted = await deductCredit();
-        
-        if (!creditDeducted) {
-          throw new Error('فشل في خصم الكريديت');
-        }
-      }
-
-      // TODO: Implement message sending functionality
-      console.log('Message would be sent:', {
-        receiverId: ad.user_id,
-        content: messageContent,
-        adId: ad.id
-      });
-
-      setMessageContent('');
-      setShowMessageBox(false);
-      toast({
-        title: "تم بنجاح",
-        description: "تم إرسال الرسالة",
-      });
-
-    } catch (error) {
-      console.error('Error sending message:', error);
-      if (!isPremium) {
-        await refreshCredits(); // إعادة تحديث الكريديت في حالة الخطأ
-      }
-      const errorMessage = error instanceof Error ? error.message : 'حدث خطأ غير متوقع';
-      toast({
-        title: "خطأ",
-        description: errorMessage,
-        variant: "destructive",
-      });
+  const openWhatsApp = () => {
+    if (ad?.phone) {
+      const whatsappUrl = `https://wa.me/${ad.phone.replace(/[^\d]/g, '')}?text=${encodeURIComponent(`أنا مهتم بهذا العرض: ${ad.title}`)}`;
+      window.open(whatsappUrl, '_blank');
     }
   };
 
-  const openWhatsApp = () => {
-    if (ad?.whatsapp) {
-      const whatsappUrl = `https://wa.me/${ad.whatsapp.replace(/[^\d]/g, '')}?text=${encodeURIComponent(`مرحبا، أنا مهتم بإعلانك: ${ad.title}`)}`;
-      window.open(whatsappUrl, '_blank');
+  const makePhoneCall = () => {
+    if (ad?.phone) {
+      window.location.href = `tel:${ad.phone}`;
     }
   };
 
@@ -541,23 +475,28 @@ const AdDetails = () => {
                   <div className="space-y-3">
                     {showContactInfo ? (
                       <div className="space-y-3">
-                        <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                          <div className="flex items-center gap-2 text-green-800 mb-2">
+                        {/* جدول رقم الهاتف */}
+                        <button
+                          onClick={makePhoneCall}
+                          className="w-full p-4 bg-green-50 rounded-lg border border-green-200 hover:bg-green-100 transition-colors cursor-pointer"
+                        >
+                          <div className="flex items-center justify-center gap-2 text-green-800">
                             <Phone className="w-4 h-4" />
-                            <span className="font-medium text-lg" dir="ltr">{ad.phone}</span>
+                            <span className="font-medium">رقم الهاتف</span>
                           </div>
-                          {ad.whatsapp && (
-                            <button
-                              onClick={openWhatsApp}
-                              className="w-full mt-2 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-                            >
-                              واتساب
-                            </button>
-                          )}
-                          <p className="text-sm text-green-600 mt-2">
-                            يمكنك الآن الاتصال بالبائع
-                          </p>
-                        </div>
+                          <span className="font-medium text-lg text-green-700" dir="ltr">{ad.phone}</span>
+                        </button>
+
+                        {/* جدول واتساب */}
+                        <button
+                          onClick={openWhatsApp}
+                          className="w-full p-4 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors cursor-pointer"
+                        >
+                          <div className="flex items-center justify-center gap-2">
+                            <span className="font-medium">واتساب</span>
+                          </div>
+                          <span className="text-sm opacity-90">أنا مهتم بهذا العرض</span>
+                        </button>
                       </div>
                     ) : (
                       <div className="space-y-3">
@@ -583,58 +522,6 @@ const AdDetails = () => {
                       </div>
                     )}
 
-                    {/* صندوق الرسائل */}
-                    <div className="space-y-3">
-                      {!showMessageBox ? (
-                        <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                          <p className="text-sm text-purple-800 mb-2">
-                            {isPremium ? 'أرسل رسالة للبائع (مجاناً للمستخدمين المميزين)' : 'أرسل رسالة للبائع (يتطلب 1 كريديت)'}
-                          </p>
-                          {!isPremium && (
-                            <p className="text-sm text-purple-600 mb-3">
-                              رصيدك الحالي: {credits} كريديت
-                            </p>
-                          )}
-                          <Button 
-                            onClick={() => setShowMessageBox(true)}
-                            disabled={!isPremium && credits < 1}
-                            variant="outline"
-                            className="w-full border-purple-300 text-purple-700 hover:bg-purple-100"
-                          >
-                            إرسال رسالة
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-                          <h4 className="font-medium text-purple-800 mb-3">إرسال رسالة للبائع</h4>
-                          <Textarea
-                            value={messageContent}
-                            onChange={(e) => setMessageContent(e.target.value)}
-                            placeholder="اكتب رسالتك هنا..."
-                            className="mb-3"
-                            rows={3}
-                          />
-                          <div className="flex gap-2">
-                            <Button
-                              onClick={handleSendMessage}
-                              disabled={!messageContent.trim() || (!isPremium && credits < 1)}
-                              className="flex-1"
-                            >
-                              {isPremium ? 'إرسال (مجاناً)' : 'إرسال (1 كريديت)'}
-                            </Button>
-                            <Button
-                              onClick={() => {
-                                setShowMessageBox(false);
-                                setMessageContent('');
-                              }}
-                              variant="outline"
-                            >
-                              إلغاء
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
                   </div>
                 ) : user && user.id === ad.user_id ? (
                   <div className="p-4 bg-blue-50 rounded-lg">
