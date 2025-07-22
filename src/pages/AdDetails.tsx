@@ -13,6 +13,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
 import AdComponent from '@/components/AdComponent';
 import SuggestedAds from '@/components/SuggestedAds';
+import { SaveAdButton } from '@/components/SaveAdButton';
+import { ShareAdButton } from '@/components/ShareAdButton';
 import { useUserBehavior } from '@/hooks/useUserBehavior';
 
 type Ad = Database['public']['Tables']['ads']['Row'] & {
@@ -367,10 +369,18 @@ const AdDetails = () => {
           {/* تفاصيل الإعلان */}
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">{ad.title}</h1>
-              <p className="text-4xl font-bold text-green-600 mb-4">
-                {formatPrice(ad.price)} مليون جنيه
-              </p>
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex-1">
+                  <h1 className="text-3xl font-bold text-gray-800 mb-2">{ad.title}</h1>
+                  <p className="text-4xl font-bold text-green-600 mb-4">
+                    {formatPrice(ad.price)} مليون جنيه
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <SaveAdButton adId={ad.id} />
+                  <ShareAdButton adId={ad.id} adTitle={ad.title} />
+                </div>
+              </div>
               <div className="flex items-center gap-4 text-gray-600 mb-4">
                 <div className="flex items-center gap-1">
                   <MapPin className="w-4 h-4" />

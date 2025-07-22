@@ -322,6 +322,87 @@ export type Database = {
           },
         ]
       }
+      premium_ad_distribution: {
+        Row: {
+          ad_id: string
+          between_ads_impressions: number | null
+          created_at: string
+          details_bottom_impressions: number | null
+          details_top_impressions: number | null
+          fairness_score: number | null
+          footer_impressions: number | null
+          header_impressions: number | null
+          id: string
+          last_shown_at: string | null
+          sidebar_impressions: number | null
+          total_impressions: number | null
+          updated_at: string
+        }
+        Insert: {
+          ad_id: string
+          between_ads_impressions?: number | null
+          created_at?: string
+          details_bottom_impressions?: number | null
+          details_top_impressions?: number | null
+          fairness_score?: number | null
+          footer_impressions?: number | null
+          header_impressions?: number | null
+          id?: string
+          last_shown_at?: string | null
+          sidebar_impressions?: number | null
+          total_impressions?: number | null
+          updated_at?: string
+        }
+        Update: {
+          ad_id?: string
+          between_ads_impressions?: number | null
+          created_at?: string
+          details_bottom_impressions?: number | null
+          details_top_impressions?: number | null
+          fairness_score?: number | null
+          footer_impressions?: number | null
+          header_impressions?: number | null
+          id?: string
+          last_shown_at?: string | null
+          sidebar_impressions?: number | null
+          total_impressions?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      premium_ad_impressions: {
+        Row: {
+          ad_id: string
+          id: string
+          impression_time: string
+          placement_type: string
+          session_id: string | null
+          user_agent: string | null
+          user_id: string | null
+          user_ip: string | null
+        }
+        Insert: {
+          ad_id: string
+          id?: string
+          impression_time?: string
+          placement_type: string
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          user_ip?: string | null
+        }
+        Update: {
+          ad_id?: string
+          id?: string
+          impression_time?: string
+          placement_type?: string
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          user_ip?: string | null
+        }
+        Relationships: []
+      }
       premium_subscriptions: {
         Row: {
           created_at: string
@@ -400,6 +481,57 @@ export type Database = {
         }
         Relationships: []
       }
+      project_backups: {
+        Row: {
+          backup_data: Json
+          backup_name: string
+          backup_size: number
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          backup_data: Json
+          backup_name: string
+          backup_size?: number
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          backup_data?: Json
+          backup_name?: string
+          backup_size?: number
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      saved_ads: {
+        Row: {
+          ad_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          ad_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          ad_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_ad_limits: {
         Row: {
           ads_count: number
@@ -424,6 +556,60 @@ export type Database = {
           max_ads?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_behavior: {
+        Row: {
+          brand_preferences: Json | null
+          city_preferences: Json | null
+          condition_preferences: Json | null
+          created_at: string
+          favorite_brands: string[] | null
+          featured_ads_viewed: number | null
+          id: string
+          last_search_filters: Json | null
+          preferred_price_max: number | null
+          preferred_price_min: number | null
+          premium_ads_viewed: number | null
+          price_range_preferences: Json | null
+          updated_at: string
+          user_id: string
+          viewed_ads_count: number | null
+        }
+        Insert: {
+          brand_preferences?: Json | null
+          city_preferences?: Json | null
+          condition_preferences?: Json | null
+          created_at?: string
+          favorite_brands?: string[] | null
+          featured_ads_viewed?: number | null
+          id?: string
+          last_search_filters?: Json | null
+          preferred_price_max?: number | null
+          preferred_price_min?: number | null
+          premium_ads_viewed?: number | null
+          price_range_preferences?: Json | null
+          updated_at?: string
+          user_id: string
+          viewed_ads_count?: number | null
+        }
+        Update: {
+          brand_preferences?: Json | null
+          city_preferences?: Json | null
+          condition_preferences?: Json | null
+          created_at?: string
+          favorite_brands?: string[] | null
+          featured_ads_viewed?: number | null
+          id?: string
+          last_search_filters?: Json | null
+          preferred_price_max?: number | null
+          preferred_price_min?: number | null
+          premium_ads_viewed?: number | null
+          price_range_preferences?: Json | null
+          updated_at?: string
+          user_id?: string
+          viewed_ads_count?: number | null
         }
         Relationships: []
       }
@@ -546,6 +732,19 @@ export type Database = {
         }
         Returns: number
       }
+      get_fair_premium_ads: {
+        Args: { _user_id?: string; _placement_type?: string; _limit?: number }
+        Returns: {
+          ad_id: string
+          title: string
+          brand: string
+          price: number
+          city: string
+          images: string[]
+          priority_score: number
+          fairness_score: number
+        }[]
+      }
       has_role: {
         Args: {
           _user_id: string
@@ -561,9 +760,33 @@ export type Database = {
         Args: Record<PropertyKey, never> | { _user_id: string }
         Returns: boolean
       }
+      record_premium_ad_impression: {
+        Args: {
+          _ad_id: string
+          _user_id?: string
+          _placement_type?: string
+          _user_ip?: string
+          _user_agent?: string
+          _session_id?: string
+        }
+        Returns: boolean
+      }
       reset_monthly_limits: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      update_user_behavior: {
+        Args: {
+          _user_id: string
+          _search_filters?: Json
+          _viewed_ad_brand?: string
+          _viewed_ad_price?: number
+          _viewed_ad_city?: string
+          _viewed_ad_condition?: string
+          _is_premium_ad?: boolean
+          _is_featured_ad?: boolean
+        }
+        Returns: boolean
       }
       verify_admin_access: {
         Args: { _user_id: string }

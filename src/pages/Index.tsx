@@ -14,6 +14,8 @@ import PremiumCard from "@/components/PremiumCard";
 import { useProfile } from "@/hooks/useProfile";
 import AdComponent from "@/components/AdComponent";
 import SuggestedAds from "@/components/SuggestedAds";
+import { SaveAdButton } from "@/components/SaveAdButton";
+import { ShareAdButton } from "@/components/ShareAdButton";
 import { useUserBehavior } from "@/hooks/useUserBehavior";
 
 const Index = () => {
@@ -418,33 +420,40 @@ const Index = () => {
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between pt-4 border-t">
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                              <span className="text-sm font-semibold text-blue-600">
-                                {(ad.profiles as any)?.full_name?.charAt(0) || 'م'}
-                              </span>
+                        <div className="space-y-3 pt-4 border-t">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                <span className="text-sm font-semibold text-blue-600">
+                                  {(ad.profiles as any)?.full_name?.charAt(0) || 'م'}
+                                </span>
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-gray-800">
+                                  {(ad.profiles as any)?.full_name || 'مستخدم'}
+                                </p>
+                                {(ad.profiles as any)?.is_premium && (
+                                  <p className="text-xs text-amber-600">موثق ✓</p>
+                                )}
+                              </div>
                             </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-800">
-                                {(ad.profiles as any)?.full_name || 'مستخدم'}
-                              </p>
-                              {(ad.profiles as any)?.is_premium && (
-                                <p className="text-xs text-amber-600">موثق ✓</p>
-                              )}
-                            </div>
+                            <Button 
+                              size="sm" 
+                              className={`${
+                                isPremium 
+                                  ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700' 
+                                  : 'bg-blue-600 hover:bg-blue-700'
+                              }`}
+                              onClick={() => handleAdClick(ad)}
+                            >
+                              مشاهدة التفاصيل
+                            </Button>
                           </div>
-                          <Button 
-                            size="sm" 
-                            className={`${
-                              isPremium 
-                                ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700' 
-                                : 'bg-blue-600 hover:bg-blue-700'
-                            }`}
-                            onClick={() => handleAdClick(ad)}
-                          >
-                            مشاهدة التفاصيل
-                          </Button>
+                          
+                          <div className="flex gap-2">
+                            <SaveAdButton adId={ad.id} variant="outline" size="sm" className="flex-1" />
+                            <ShareAdButton adId={ad.id} adTitle={ad.title} variant="outline" size="sm" className="flex-1" />
+                          </div>
                         </div>
                       </CardContent>
                     </Card>

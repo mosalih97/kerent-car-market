@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useMyAds, useDeleteAd } from '@/hooks/useAds';
+import { useSavedAds } from '@/hooks/useSavedAds';
 import { useProfile } from '@/hooks/useProfile';
 import { useNavigate } from 'react-router-dom';
 import CreateAdModal from './CreateAdModal';
@@ -17,6 +18,7 @@ const UserDashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { data: myAds, isLoading } = useMyAds();
+  const { savedAds, isLoading: savedAdsLoading } = useSavedAds();
   const { profile, isLoading: profileLoading } = useProfile();
   const deleteAdMutation = useDeleteAd();
   
@@ -95,10 +97,14 @@ const UserDashboard = () => {
         )}
 
         <Tabs defaultValue="ads" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:w-max">
+          <TabsList className="grid w-full grid-cols-3 lg:w-max">
             <TabsTrigger value="ads" className="flex items-center gap-2">
               <Plus className="w-4 h-4" />
               إعلاناتي
+            </TabsTrigger>
+            <TabsTrigger value="saved" className="flex items-center gap-2">
+              <User className="w-4 h-4" />
+              المحفوظات
             </TabsTrigger>
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <User className="w-4 h-4" />
@@ -209,6 +215,96 @@ const UserDashboard = () => {
             )}
           </TabsContent>
 
+          <TabsContent value="saved" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-semibold">الإعلانات المحفوظة</h2>
+              <p className="text-gray-600">
+                {savedAds?.length || 0} إعلان محفوظ
+              </p>
+            </div>
+
+            {savedAdsLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} className="animate-pulse">
+                    <div className="h-48 bg-gray-200 rounded-t-lg"></div>
+                    <CardContent className="p-4">
+                      <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded"></div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : savedAds && savedAds.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {savedAds.map((ad: any) => (
+                  <Card key={ad.id} className="group hover:shadow-lg transition-shadow">
+                    <div className="relative">
+                      <img 
+                        src={ad.images?.[0] || "https://images.unsplash.com/photo-1549924231-f129b911e442?w=400&h=300&fit=crop"}
+                        alt={ad.title}
+                        className="w-full h-48 object-cover rounded-t-lg cursor-pointer"
+                        onClick={() => navigate(`/ad/${ad.id}`)}
+                      />
+                      <div className="absolute top-2 right-2 flex gap-1">
+                        {ad.is_featured && (
+                          <Badge className="bg-yellow-500 text-white">مميز</Badge>
+                        )}
+                      </div>
+                      <div className="absolute bottom-2 left-2">
+                        <Badge variant="secondary" className="bg-white/90">
+                          <Eye className="w-3 h-3 ml-1" />
+                          {ad.views_count || 0}
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <CardContent className="p-4">
+                      <h3 
+                        className="font-semibold text-lg mb-2 group-hover:text-blue-600 transition-colors cursor-pointer"
+                        onClick={() => navigate(`/ad/${ad.id}`)}
+                      >
+                        {ad.title}
+                      </h3>
+                      <p className="text-2xl font-bold text-green-600 mb-2">
+                        {formatPrice(ad.price)} مليون جنيه
+                      </p>
+                      <div className="flex justify-between text-sm text-gray-600 mb-4">
+                        <span>حفظ في {formatDate(ad.saved_at)}</span>
+                        <span>{ad.city}</span>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="flex-1"
+                          onClick={() => navigate(`/ad/${ad.id}`)}
+                        >
+                          <Eye className="w-4 h-4 ml-2" />
+                          عرض التفاصيل
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="text-center py-12">
+                <CardContent>
+                  <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-600 mb-2">لا توجد إعلانات محفوظة</h3>
+                  <p className="text-gray-500 mb-4">لم تقم بحفظ أي إعلانات بعد</p>
+                  <Button 
+                    onClick={() => navigate('/')}
+                    variant="outline"
+                  >
+                    تصفح الإعلانات
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
 
           <TabsContent value="profile" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
