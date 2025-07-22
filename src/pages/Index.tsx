@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, MapPin, Car, DollarSign, Filter, Star, Eye, Plus, User, Heart, Share2, Phone, MessageCircle, Zap, Sparkles, Cpu } from "lucide-react";
+import { Search, MapPin, Car, DollarSign, Filter, Star, Eye, Plus, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -86,73 +86,60 @@ const Index = () => {
   const isLoadingAds = hasSearched ? isSearching : isLoading;
 
   return (
-    <div className="min-h-screen bg-background cyber-grid" dir="rtl">
-      {/* Futuristic Header */}
-      <header className="glass-dark border-b border-border/20 sticky top-0 z-50 backdrop-blur-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50" dir="rtl">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-4">
-                <div className="relative w-16 h-16 neon-border p-2 flex items-center justify-center overflow-hidden">
+            <div className="flex items-center gap-8">
+              <div className="flex items-center gap-3">
+                <div className="w-24 h-24 border-2 border-amber-500 bg-transparent rounded-lg p-2 flex items-center justify-center overflow-hidden">
                   <img 
                     src="/lovable-uploads/6e1da3af-20f1-469a-8fb3-547fa3c534ac.png" 
                     alt="الكرين" 
-                    className="w-20 h-20 object-contain transform scale-110"
+                    className="w-28 h-28 object-contain transform scale-110"
                   />
-                  <div className="absolute inset-0 bg-accent/10 rounded-xl"></div>
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-gradient-primary">الكرين</h1>
-                  <p className="text-xs text-muted-foreground">مستقبل السيارات في السودان</p>
+                  <h1 className="text-2xl font-bold text-blue-800">الكرين</h1>
+                  <p className="text-xs text-blue-600">موقع السيارات الأول في السودان</p>
                 </div>
               </div>
-              
               <nav className="hidden md:flex items-center gap-6">
-                <Button variant="ghost" className="text-foreground hover:text-primary">
-                  <Sparkles className="w-4 h-4 ml-2" />
-                  الرئيسية
-                </Button>
-                <Button variant="ghost" className="text-foreground hover:text-primary">
-                  <Search className="w-4 h-4 ml-2" />
-                  البحث
-                </Button>
-                <Button variant="ghost" className="text-foreground hover:text-primary">
-                  <Cpu className="w-4 h-4 ml-2" />
-                  عنا
-                </Button>
+                <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">الرئيسية</a>
+                <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">البحث</a>
+                <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">عنا</a>
               </nav>
             </div>
+            
             
             <div className="flex items-center gap-3">
               {user ? (
                 <>
-                  <span className="text-sm text-muted-foreground hidden sm:block">
-                    مرحباً، {user.user_metadata?.full_name || user.email}
-                  </span>
+                  <span className="text-sm text-gray-600 hidden sm:block">مرحباً، {user.user_metadata?.full_name || user.email}</span>
                   
+                  {/* Add Ad Button */}
                   <Button 
                     onClick={() => user ? setShowCreateModal(true) : navigate('/auth')}
-                    variant="premium"
-                    size="lg"
-                    className="hidden sm:flex"
+                    className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 hidden sm:flex"
                   >
                     <Plus className="w-4 h-4 ml-2" />
                     إضافة إعلان
                   </Button>
                   
+                  {/* Mobile Add Ad Button */}
                   <Button 
                     onClick={() => user ? setShowCreateModal(true) : navigate('/auth')}
-                    variant="premium"
-                    size="icon"
-                    className="sm:hidden"
+                    size="sm"
+                    className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 sm:hidden"
                   >
                     <Plus className="w-4 h-4" />
                   </Button>
 
+                  {/* My Account Button */}
                   <Button 
                     onClick={handleDashboardClick}
-                    variant="cyber"
-                    size="lg"
+                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
                   >
                     <User className="w-4 h-4 ml-2" />
                     <span className="hidden sm:inline">حسابي</span>
@@ -161,10 +148,8 @@ const Index = () => {
               ) : (
                 <Button 
                   onClick={handleAuthClick}
-                  variant="default"
-                  size="lg"
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
                 >
-                  <Zap className="w-4 h-4 ml-2" />
                   تسجيل الدخول
                 </Button>
               )}
@@ -173,50 +158,32 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Hero Section - Cyberpunk Style */}
-      <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10"></div>
-        <div className="absolute inset-0">
-          <div className="cyber-grid opacity-30"></div>
-        </div>
-        
+      {/* Hero Section with Search */}
+      <section className="relative py-16 bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 text-white overflow-hidden">
+        <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-              <span className="text-gradient-primary">المستقبل</span>
-              <br />
-              <span className="text-gradient-secondary">يبدأ هنا</span>
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
+              اشتري وبيع بمزاجك
             </h2>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              تجربة شراء سيارات بتقنية عصرية • أكثر من {ads?.length || 0} سيارة متاحة
+            <p className="text-xl md:text-2xl text-blue-100 max-w-2xl mx-auto leading-relaxed">
+              أكثر من {ads?.length || 0} سيارة متاحة للبيع في جميع أنحاء السودان
             </p>
-            
-            <div className="flex justify-center gap-4 mt-8">
-              <div className="glass-dark px-6 py-3 rounded-full">
-                <Sparkles className="w-5 h-5 text-accent inline ml-2" />
-                <span className="text-accent font-bold">تقنية متطورة</span>
-              </div>
-              <div className="glass-dark px-6 py-3 rounded-full">
-                <Zap className="w-5 h-5 text-primary inline ml-2" />
-                <span className="text-primary font-bold">بحث ذكي</span>
-              </div>
-            </div>
           </div>
 
-          {/* Modern Search Interface */}
-          <div className="max-w-6xl mx-auto">
-            <Card className="card-glow p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div className="space-y-3">
-                  <label className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-primary" />
-                    الموقع
+          <div className="max-w-5xl mx-auto">
+            <Card className="p-6 bg-white/95 backdrop-blur-sm shadow-2xl border-0">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-blue-600" />
+                    الولاية
                   </label>
                   <Select onValueChange={(value) => setSearchFilters(prev => ({ ...prev, city: value }))}>
-                    <SelectTrigger className="h-14 text-right glass-light border-border/50">
+                    <SelectTrigger className="h-12 text-right">
                       <SelectValue placeholder="اختر الولاية" />
                     </SelectTrigger>
-                    <SelectContent className="glass-dark">
+                    <SelectContent>
                       <SelectItem value="الخرطوم">الخرطوم</SelectItem>
                       <SelectItem value="الجزيرة">الجزيرة</SelectItem>
                       <SelectItem value="النيل الأبيض">النيل الأبيض</SelectItem>
@@ -239,16 +206,16 @@ const Index = () => {
                   </Select>
                 </div>
 
-                <div className="space-y-3">
-                  <label className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <Car className="w-4 h-4 text-primary" />
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <Car className="w-4 h-4 text-blue-600" />
                     العلامة التجارية
                   </label>
                   <Select onValueChange={(value) => setSearchFilters(prev => ({ ...prev, brand: value }))}>
-                    <SelectTrigger className="h-14 text-right glass-light border-border/50">
+                    <SelectTrigger className="h-12 text-right">
                       <SelectValue placeholder="اختر العلامة التجارية" />
                     </SelectTrigger>
-                    <SelectContent className="glass-dark">
+                    <SelectContent>
                       <SelectItem value="تويوتا">تويوتا (Toyota)</SelectItem>
                       <SelectItem value="نيسان">نيسان (Nissan)</SelectItem>
                       <SelectItem value="هيونداي">هيونداي (Hyundai)</SelectItem>
@@ -273,37 +240,37 @@ const Index = () => {
                   </Select>
                 </div>
 
-                <div className="space-y-3">
-                  <label className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-primary" />
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <DollarSign className="w-4 h-4 text-blue-600" />
                     نطاق السعر
                   </label>
-                  <div className="flex gap-3">
+                  <div className="flex gap-2">
                     <Input 
                       placeholder="من" 
-                      className="h-14 text-right glass-light border-border/50" 
+                      className="h-12 text-right" 
                       value={searchFilters.minPrice}
                       onChange={(e) => setSearchFilters(prev => ({ ...prev, minPrice: e.target.value }))}
                     />
                     <Input 
                       placeholder="إلى" 
-                      className="h-14 text-right glass-light border-border/50"
+                      className="h-12 text-right"
                       value={searchFilters.maxPrice}
                       onChange={(e) => setSearchFilters(prev => ({ ...prev, maxPrice: e.target.value }))}
                     />
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <label className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <Filter className="w-4 h-4 text-primary" />
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <Filter className="w-4 h-4 text-blue-600" />
                     الحالة
                   </label>
                   <Select onValueChange={(value) => setSearchFilters(prev => ({ ...prev, condition: value }))}>
-                    <SelectTrigger className="h-14 text-right glass-light border-border/50">
+                    <SelectTrigger className="h-12 text-right">
                       <SelectValue placeholder="حالة السيارة" />
                     </SelectTrigger>
-                    <SelectContent className="glass-dark">
+                    <SelectContent>
                       <SelectItem value="new">جديدة</SelectItem>
                       <SelectItem value="excellent">ممتازة</SelectItem>
                       <SelectItem value="good">جيدة جداً</SelectItem>
@@ -318,9 +285,7 @@ const Index = () => {
                 <Button 
                   onClick={handleSearch}
                   disabled={isSearching}
-                  variant="default"
-                  size="xl"
-                  className="flex-1"
+                  className="flex-1 h-14 text-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold rounded-lg shadow-lg"
                 >
                   <Search className="w-5 h-5 ml-3" />
                   {isSearching ? 'جارٍ البحث...' : 'ابحث الآن'}
@@ -330,7 +295,7 @@ const Index = () => {
                   <Button 
                     onClick={handleClearSearch}
                     variant="outline"
-                    size="xl"
+                    className="h-14 px-8 text-lg font-bold"
                   >
                     مسح البحث
                   </Button>
@@ -343,31 +308,24 @@ const Index = () => {
 
       {/* Premium Plan Card */}
       {!isPremium && (
-        <section className="py-8">
+        <section className="py-8 bg-white">
           <div className="container mx-auto px-4">
             <PremiumCard variant="home" />
           </div>
         </section>
       )}
 
-      {/* Ad Component */}
+      {/* إعلان في أعلى الصفحة */}
       <AdComponent placement="header_banner" size="large" className="container mx-auto px-4 py-4" />
 
-      {/* Modern Ads Section */}
-      <section className="py-20">
+      {/* Ads Section */}
+      <section className="py-16">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h3 className="text-4xl md:text-5xl font-bold mb-6">
-              {hasSearched ? (
-                <>
-                  <span className="text-gradient-primary">نتائج البحث</span>
-                  <span className="text-muted-foreground"> ({displayAds.length})</span>
-                </>
-              ) : (
-                <span className="text-gradient-secondary">السيارات المتاحة</span>
-              )}
+          <div className="text-center mb-12">
+            <h3 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+              {hasSearched ? `نتائج البحث (${displayAds.length})` : 'السيارات المتاحة'}
             </h3>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               {hasSearched 
                 ? (displayAds.length > 0 ? 'إليك النتائج التي عثرنا عليها' : 'لم نعثر على نتائج مطابقة لبحثك')
                 : 'اكتشف أفضل العروض المتاحة من البائعين الموثوقين'
@@ -378,12 +336,12 @@ const Index = () => {
           {isLoadingAds ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <Card key={i} className="animate-pulse h-96">
-                  <div className="h-48 bg-muted rounded-t-2xl"></div>
+                <Card key={i} className="animate-pulse">
+                  <div className="h-48 bg-gray-200 rounded-t-lg"></div>
                   <CardContent className="p-6">
-                    <div className="h-4 bg-muted rounded mb-4"></div>
-                    <div className="h-4 bg-muted rounded mb-2"></div>
-                    <div className="h-4 bg-muted rounded"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-4"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded"></div>
                   </CardContent>
                 </Card>
               ))}
@@ -393,131 +351,137 @@ const Index = () => {
               {displayAds?.map((ad, index) => {
                 const isPremium = ad.is_premium || ad.profiles?.is_premium;
                 const isFeatured = ad.is_featured;
-                const showSponsoredAd = (index + 1) % 2 === 0;
+                const showSponsoredAd = (index + 1) % 2 === 0; // بعد كل بطاقتين
                 
                 return (
                   <>
-                    <Card key={ad.id} className={`group cursor-pointer transition-all duration-500 hover:scale-[1.02] ${
-                      isPremium ? 'premium-card' : 
-                      isFeatured ? 'featured-card' : 'card-glow'
+                    <Card key={ad.id} className={`group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg overflow-hidden bg-white cursor-pointer ${
+                      isPremium ? 'premium-card ring-2 ring-amber-300' : 
+                      isFeatured ? 'featured-card' : ''
                     }`}>
-                      <div className="relative overflow-hidden rounded-t-2xl">
+                      <div className="relative">
                         <img 
                           src={ad.images?.[0] || "https://images.unsplash.com/photo-1549924231-f129b911e442?w=400&h=300&fit=crop"}
                           alt={ad.title}
-                          className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-700"
+                          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                         />
-                        
-                        {/* Status Badges */}
                         <div className="absolute top-4 right-4 flex gap-2">
                           {isPremium && (
-                            <Badge className="premium-badge">
+                            <Badge className="premium-badge border-0">
                               <Star className="w-3 h-3 ml-1" />
                               مميز
                             </Badge>
                           )}
-                          {isFeatured && (
-                            <Badge className="bg-featured text-featured-foreground">
-                              <Sparkles className="w-3 h-3 ml-1" />
-                              منتقى
+                          {isFeatured && !isPremium && (
+                            <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0">
+                              <Star className="w-3 h-3 ml-1" />
+                              مُروّج
                             </Badge>
                           )}
                         </div>
-
-                        {/* Action Buttons */}
-                        <div className="absolute top-4 left-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <SaveAdButton 
-                            adId={ad.id} 
-                            className="glass-dark rounded-full p-2 w-10 h-10 hover:scale-110"
-                          />
-                          <ShareAdButton 
-                            adId={ad.id}
-                            adTitle={ad.title}
-                            className="glass-dark rounded-full p-2 w-10 h-10 hover:scale-110"
-                          />
-                        </div>
-
-                        {/* Quick View Overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                          <Button 
-                            onClick={() => handleAdClick(ad)}
-                            variant="ghost"
-                            size="sm"
-                            className="glass-light text-foreground"
-                          >
-                            <Eye className="w-4 h-4 ml-2" />
-                            عرض التفاصيل
-                          </Button>
+                        <div className="absolute bottom-4 left-4">
+                          <Badge variant="outline" className="bg-black/70 text-white border-none">
+                            <Eye className="w-3 h-3 ml-1" />
+                            {ad.views_count}
+                          </Badge>
                         </div>
                       </div>
 
-                      <CardContent className="p-6" onClick={() => handleAdClick(ad)}>
-                        <div className="space-y-4">
-                          <div>
-                            <h4 className="text-xl font-bold text-foreground mb-2 line-clamp-2 leading-tight">
-                              {ad.title}
-                            </h4>
-                            <p className="text-sm text-muted-foreground">
-                              {ad.year} • {ad.mileage?.toLocaleString()} كم • {ad.city}
-                            </p>
-                          </div>
+                      <CardContent className="p-6">
+                        <div className="mb-4">
+                          <h3 
+                            className={`text-xl font-bold mb-2 group-hover:text-blue-600 transition-colors cursor-pointer line-clamp-2 ${
+                              isPremium ? 'text-amber-700' : 'text-gray-800'
+                            }`}
+                            onClick={() => handleAdClick(ad)}
+                          >
+                            {ad.title}
+                          </h3>
+                          <p className={`text-3xl font-bold mb-3 ${
+                            isPremium ? 'text-amber-600' : 'text-green-600'
+                          }`}>
+                            {formatPrice(ad.price)} مليون جنيه
+                          </p>
+                        </div>
 
+                        <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4" />
+                            <span>{ad.city}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span>سنة الصنع: {ad.year}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span>{ad.brand}</span>
+                          </div>
+                          <div className="text-gray-500 text-xs">
+                            {formatDate(ad.created_at)}
+                          </div>
+                        </div>
+
+                        <div className="space-y-3 pt-4 border-t">
                           <div className="flex items-center justify-between">
-                            <div className="text-right">
-                              <p className="text-2xl font-bold text-gradient-primary">
-                                {formatPrice(ad.price)} مليون
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {formatDate(ad.created_at)}
-                              </p>
-                            </div>
-                            
-                            {/* Seller Info */}
                             <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center">
-                                <User className="w-4 h-4 text-primary-foreground" />
+                              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                <span className="text-sm font-semibold text-blue-600">
+                                  {(ad.profiles as any)?.full_name?.charAt(0) || 'م'}
+                                </span>
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-gray-800">
+                                  {(ad.profiles as any)?.full_name || 'مستخدم'}
+                                </p>
+                                {(ad.profiles as any)?.is_premium && (
+                                  <p className="text-xs text-amber-600">موثق ✓</p>
+                                )}
                               </div>
                             </div>
+                            <Button 
+                              size="sm" 
+                              className={`${
+                                isPremium 
+                                  ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700' 
+                                  : 'bg-blue-600 hover:bg-blue-700'
+                              }`}
+                              onClick={() => handleAdClick(ad)}
+                            >
+                              مشاهدة التفاصيل
+                            </Button>
                           </div>
-
-                          {/* Modern Action Buttons */}
-                          <div className="flex gap-2 pt-2">
-                            <Button 
-                              variant="cyber" 
-                              size="sm" 
-                              className="flex-1"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                // Handle contact
-                              }}
-                            >
-                              <MessageCircle className="w-4 h-4 ml-2" />
-                              محادثة
-                            </Button>
-                            <Button 
-                              variant="neon" 
-                              size="sm" 
-                              className="flex-1"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                // Handle call
-                              }}
-                            >
-                              <Phone className="w-4 h-4 ml-2" />
-                              اتصال
-                            </Button>
+                          
+                          <div className="flex gap-2">
+                            <SaveAdButton adId={ad.id} variant="outline" size="sm" className="flex-1" />
+                            <ShareAdButton adId={ad.id} adTitle={ad.title} variant="outline" size="sm" className="flex-1" />
                           </div>
                         </div>
                       </CardContent>
                     </Card>
-
-                    {/* Sponsored Ad Integration */}
+                    
+                    {/* جدول إعلانات ممولة صغير بعد كل بطاقتين */}
                     {showSponsoredAd && (
-                      <AdComponent 
-                        placement="between_ads" 
-                        size="medium"
-                        className="md:col-span-2 lg:col-span-1"
-                      />
+                      <div className="col-span-1 md:col-span-2 lg:col-span-3 my-4">
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs text-gray-500 font-medium">إعلانات ممولة</span>
+                            <Badge variant="outline" className="text-xs">
+                              Sponsored
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <AdComponent 
+                              placement="sponsored_small" 
+                              size="medium" 
+                              className="h-20 rounded-md"
+                            />
+                            <AdComponent 
+                              placement="sponsored_small" 
+                              size="medium" 
+                              className="h-20 rounded-md"
+                            />
+                          </div>
+                        </div>
+                      </div>
                     )}
                   </>
                 );
@@ -525,31 +489,34 @@ const Index = () => {
             </div>
           )}
 
-          {!isLoadingAds && displayAds?.length === 0 && hasSearched && (
-            <div className="text-center py-16">
-              <div className="glass-dark rounded-2xl p-8 max-w-md mx-auto">
-                <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <h4 className="text-xl font-bold text-foreground mb-2">لا توجد نتائج</h4>
-                <p className="text-muted-foreground mb-6">جرب تعديل معايير البحث للحصول على نتائج أفضل</p>
-                <Button onClick={handleClearSearch} variant="outline">
-                  مسح البحث
-                </Button>
-              </div>
+          {displayAds && displayAds.length === 0 && !isLoadingAds && (
+            <div className="text-center py-12">
+              <Car className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                {hasSearched ? 'لم نعثر على نتائج' : 'لا توجد إعلانات متاحة'}
+              </h3>
+              <p className="text-gray-500">
+                {hasSearched ? 'جرب تعديل معايير البحث' : 'تحقق مرة أخرى لاحقاً'}
+              </p>
             </div>
           )}
         </div>
       </section>
 
-      {/* Suggested Ads */}
-      <SuggestedAds />
+      {/* Suggested Ads Section */}
+      <SuggestedAds 
+        limit={6}
+        title="سيارات مقترحة"
+        className="bg-gray-50"
+      />
 
-      {/* Bottom Ad Component */}
-      <AdComponent placement="footer_banner" size="large" className="container mx-auto px-4 py-8" />
+      {/* إعلان في ذيل الصفحة */}
+      <AdComponent placement="footer_banner" size="large" className="container mx-auto px-4 py-4" />
 
       {/* Create Ad Modal */}
       <CreateAdModal 
         open={showCreateModal} 
-        onOpenChange={setShowCreateModal}
+        onOpenChange={setShowCreateModal} 
       />
     </div>
   );
