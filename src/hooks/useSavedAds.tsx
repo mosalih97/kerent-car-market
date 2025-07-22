@@ -15,23 +15,14 @@ export const useSavedAds = () => {
     queryFn: async () => {
       if (!user?.id) return [];
       
+      console.log('Fetching saved ads for user:', user.id);
+      
       const { data, error } = await supabase
         .from('saved_ads')
         .select(`
           id,
           created_at,
-          ads:ad_id (
-            id,
-            title,
-            brand,
-            price,
-            city,
-            images,
-            created_at,
-            condition,
-            year,
-            mileage
-          )
+          ad_id
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -41,10 +32,52 @@ export const useSavedAds = () => {
         return [];
       }
 
-      return data?.map(item => ({
-        ...(item.ads as any),
-        saved_at: item.created_at
-      })) || [];
+      console.log('Saved ads data:', data);
+
+      if (!data || data.length === 0) {
+        console.log('No saved ads found');
+        return [];
+      }
+
+      // Get the ads details separately
+      const adIds = data.map(item => item.ad_id);
+      console.log('Fetching ads details for IDs:', adIds);
+      
+      const { data: adsData, error: adsError } = await supabase
+        .from('ads')
+        .select(`
+          id,
+          title,
+          brand,
+          price,
+          city,
+          images,
+          created_at,
+          condition,
+          year,
+          mileage,
+          views_count
+        `)
+        .in('id', adIds);
+
+      if (adsError) {
+        console.error('Error fetching ads details:', adsError);
+        return [];
+      }
+
+      console.log('Ads details data:', adsData);
+
+      // Combine saved ads with ads details
+      const result = data.map(savedAd => {
+        const adDetails = adsData?.find(ad => ad.id === savedAd.ad_id);
+        return {
+          ...adDetails,
+          saved_at: savedAd.created_at
+        };
+      }).filter(Boolean);
+      
+      console.log('Final combined result:', result);
+      return result;
     },
     enabled: !!user?.id,
   });
@@ -59,7 +92,7 @@ export const useSavedAds = () => {
         .from('saved_ads')
         .select('id')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       return !!data;
     },
@@ -154,7 +187,7 @@ export const useAdSaveStatus = (adId: string) => {
         .select('id')
         .eq('user_id', user.id)
         .eq('ad_id', adId)
-        .single();
+        .maybeSingle();
 
       return !!data;
     },
