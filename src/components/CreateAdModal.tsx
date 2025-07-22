@@ -14,6 +14,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 import { X, Upload, AlertCircle, Star, Crown } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import WatermarkedImage from "@/components/WatermarkedImage";
 
 interface CreateAdModalProps {
   open: boolean;
@@ -220,7 +221,7 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
               <div className="grid grid-cols-3 gap-4">
                 {imagePreviewUrls.map((url, index) => (
                   <div key={index} className="relative group">
-                    <img 
+                    <WatermarkedImage 
                       src={url} 
                       alt={`صورة ${index + 1}`}
                       className="w-full h-32 object-cover rounded-lg border"
@@ -228,7 +229,7 @@ const CreateAdModal = ({ open, onOpenChange }: CreateAdModalProps) => {
                     <button
                       type="button"
                       onClick={() => removeImage(index)}
-                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
                     >
                       <X className="w-4 h-4" />
                     </button>

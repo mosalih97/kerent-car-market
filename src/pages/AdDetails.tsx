@@ -14,6 +14,7 @@ import { Database } from '@/integrations/supabase/types';
 import AdComponent from '@/components/AdComponent';
 import SuggestedAds from '@/components/SuggestedAds';
 import { useUserBehavior } from '@/hooks/useUserBehavior';
+import WatermarkedImage from '@/components/WatermarkedImage';
 
 type Ad = Database['public']['Tables']['ads']['Row'] & {
   profiles: Database['public']['Tables']['profiles']['Row'];
@@ -335,7 +336,7 @@ const AdDetails = () => {
           {/* معرض الصور */}
           <div className="space-y-4">
             <div className="relative">
-              <img 
+              <WatermarkedImage 
                 src={ad.images?.[currentImageIndex] || "https://images.unsplash.com/photo-1549924231-f129b911e442?w=800&h=600&fit=crop"}
                 alt={ad.title}
                 className="w-full h-96 object-cover rounded-lg"
@@ -350,15 +351,16 @@ const AdDetails = () => {
             {ad.images && ad.images.length > 1 && (
               <div className="flex gap-2 overflow-x-auto">
                 {ad.images.map((image, index) => (
-                  <img
-                    key={index}
-                    src={image}
-                    alt={`${ad.title} ${index + 1}`}
-                    className={`w-20 h-20 object-cover rounded cursor-pointer flex-shrink-0 ${
-                      currentImageIndex === index ? 'ring-2 ring-blue-500' : ''
-                    }`}
-                    onClick={() => setCurrentImageIndex(index)}
-                  />
+                  <div key={index} className={`w-20 h-20 rounded cursor-pointer flex-shrink-0 ${
+                    currentImageIndex === index ? 'ring-2 ring-blue-500' : ''
+                  }`}>
+                    <WatermarkedImage
+                      src={image}
+                      alt={`${ad.title} ${index + 1}`}
+                      className="w-20 h-20 object-cover rounded"
+                      onClick={() => setCurrentImageIndex(index)}
+                    />
+                  </div>
                 ))}
               </div>
             )}
