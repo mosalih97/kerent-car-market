@@ -15,7 +15,6 @@ import { useProfile } from "@/hooks/useProfile";
 import AdComponent from "@/components/AdComponent";
 import SuggestedAds from "@/components/SuggestedAds";
 import { useUserBehavior } from "@/hooks/useUserBehavior";
-import WatermarkedImage from "@/components/WatermarkedImage";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -359,7 +358,7 @@ const Index = () => {
                       isFeatured ? 'featured-card' : ''
                     }`}>
                       <div className="relative">
-                        <WatermarkedImage 
+                        <img 
                           src={ad.images?.[0] || "https://images.unsplash.com/photo-1549924231-f129b911e442?w=400&h=300&fit=crop"}
                           alt={ad.title}
                           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"

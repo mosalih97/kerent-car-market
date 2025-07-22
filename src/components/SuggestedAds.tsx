@@ -5,7 +5,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useSuggestedAds } from '@/hooks/useSuggestedAds';
 import { useUserBehavior } from '@/hooks/useUserBehavior';
-import WatermarkedImage from '@/components/WatermarkedImage';
 
 interface SuggestedAdsProps {
   currentAdId?: string;
@@ -94,7 +93,7 @@ const SuggestedAds = ({
                 onClick={() => handleAdClick(ad)}
               >
                 <div className="relative h-24">
-                  <WatermarkedImage 
+                  <img 
                     src={ad.images?.[0] || "https://images.unsplash.com/photo-1549924231-f129b911e442?w=200&h=120&fit=crop"}
                     alt={ad.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
